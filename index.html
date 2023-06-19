@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="./favicon.png" />
+		<meta name="viewport" content="width=device-width" />
+		
+		<link rel="modulepreload" href="./_app/immutable/entry/start.86d1c54b.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.d70738cb.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.b088ef24.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.a6481664.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.84cab9cf.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/2.fb9de3c8.js">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">
+
+
+<input type="password" value="">
+<button type="button">Ping</button>
+
+<p>Result:
+</p>
+<pre>    
+</pre>
+
+
+<button type="button">Fetch user decks</button>
+Min coverage:
+<input type="number" value="80">
+Min learning coverage:
+<input type="number" value="80">
+Filter builtin:
+<input type="checkbox">
+
+
+
+
+			
+			<script>
+				{
+					__sveltekit_924sca = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						env: {}
+					};
+
+					const element = document.currentScript.parentElement;
+
+					const data = [null,null];
+
+					Promise.all([
+						import("./_app/immutable/entry/start.86d1c54b.js"),
+						import("./_app/immutable/entry/app.a6481664.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2],
+							data,
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>
