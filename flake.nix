@@ -26,6 +26,8 @@
 
           pkgs.nodePackages.typescript
           pkgs.nodePackages.typescript-language-server
+          pkgs.nodePackages.svelte-language-server
+          pkgs.nodePackages.js-beautify
         ];
       };
     });
