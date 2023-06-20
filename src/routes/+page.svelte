@@ -1,7 +1,14 @@
 <script lang="ts">
-    type Deck = [string, number, number, boolean, number]
-    let token: String = ""
-    let result: String = ""
+    interface Deck {
+        name: string,
+        id: number,
+        known_coverage: number,
+        learning_coverage: number,
+        is_built_in: boolean
+    }
+
+    let token: string = ""
+    let result: string = ""
     let decks: Deck[] = []
     let min_coverage = 80
     let min_learning = 80
@@ -33,9 +40,19 @@
             })
         });
 
-        const json: {decks: Deck[]} = await res.json();
+        const json = await res.json();
         result = JSON.stringify(json);
-        decks = json.decks;
+        decks = json.decks.map((it:[string, number, number, boolean, number]) => {
+            let [name, known_coverage, learning_coverage, is_built_in, id] = it;
+            return {
+                name: name,
+                id: id,
+                known_coverage: known_coverage,
+                learning_coverage: learning_coverage,
+                is_built_in: is_built_in
+            }
+        });
+        decks.sort((a: Deck, b: Deck) => a.name.localeCompare(b.name) ); // sort by name
     }
 
 </script>
@@ -61,11 +78,11 @@ Filter builtin:
 <input bind:checked={filter_builtin} type="checkbox" />
 
 {#each decks as deck}
-    {#if deck[1] > min_coverage && deck[2] > min_learning && (deck[3] || !filter_builtin)}
-        <pre> <a href="https://jpdb.io/deck?id={deck[4]}">{deck[0]}</a>
-        Coverage: {deck[1]}
-        Learning Coverage: {deck[2]}
-        Builtin: {deck[3]}
+    {#if deck.known_coverage > min_coverage && deck.learning_coverage > min_learning && (deck.is_built_in || !filter_builtin)}
+        <pre> <a href="https://jpdb.io/deck?id={deck.id}">{deck.name}</a>
+        Coverage: {deck.known_coverage}
+        Learning Coverage: {deck.learning_coverage}
+        Builtin: {deck.is_built_in}
         </pre>
     {/if}
 {/each}
