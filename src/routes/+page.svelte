@@ -81,12 +81,42 @@ Min learning coverage:
 Filter builtin:
 <input bind:checked={filter_builtin} type="checkbox" />
 
-{#each decks as deck}
-    {#if deck.known_coverage > min_coverage && deck.learning_coverage > min_learning && (deck.is_built_in || !filter_builtin)}
-        <pre> {deck.name} <a href="https://jpdb.io/deck?id={deck.id}">[x]</a>
-        Coverage: {deck.known_coverage}
-        Learning Coverage: {deck.learning_coverage}
-        Builtin: {deck.is_built_in}
-        </pre>
-    {/if}
-{/each}
+<table>
+    <tr>
+        <th>name</th>
+        <th>coverage</th>
+        <th>learning coverage</th>
+        <th>is_built_in</th>
+    </tr>
+    {#each decks as deck}
+        {#if deck.known_coverage > min_coverage && deck.learning_coverage > min_learning && (deck.is_built_in || !filter_builtin)}
+            <tr>
+                <td>
+                    {deck.name}
+                    <a href="https://jpdb.io/deck?id={deck.id}">[x]</a>
+                </td>
+                <td>{deck.known_coverage.toFixed(1)}</td>
+                <td>{deck.learning_coverage.toFixed(1)}</td>
+                <td>{deck.is_built_in}</td>
+            </tr>
+        {/if}
+    {/each}
+</table>
+
+<style>
+    td:first-child {
+        width: 400px;
+    }
+    table tr:nth-child(2n) {
+        background-color: #e7e9eb;
+    }
+    table tr:nth-child(2n) {
+        background-color: #ddd;
+    }
+    table {
+        border: 1px solid #000000;
+    }
+    tr {
+        border: 1px solid #000000;
+    }
+</style>
