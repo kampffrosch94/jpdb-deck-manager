@@ -14,40 +14,36 @@
     let min_learning = 80;
     let filter_builtin = false;
 
-    async function doPing() {
+    async function jpdbRequest(url: string, body: object): Promise<Response> {
         let headers = new Headers();
         headers.set("Authorization", "Bearer " + token);
         headers.set("Content-Type", "application/json");
-        const res = await fetch("https://jpdb.io/api/v1/ping", {
+        return await fetch("https://jpdb.io/api/v1/" + url, {
             headers: headers,
             method: "POST",
-            body: JSON.stringify({}),
+            body: JSON.stringify(body),
         });
+    }
 
+    async function doPing() {
+        const res = await jpdbRequest("ping", {});
         const json = await res.json();
         result = JSON.stringify(json);
     }
 
     async function fetchDecks() {
-        let headers = new Headers();
-        headers.set("Authorization", "Bearer " + token);
-        headers.set("Content-Type", "application/json");
-        const res = await fetch("https://jpdb.io/api/v1/list-user-decks", {
-            headers: headers,
-            method: "POST",
-            body: JSON.stringify({
-                fields: [
-                    "name",
-                    "vocabulary_known_coverage",
-                    "vocabulary_in_progress_coverage",
-                    "is_built_in",
-                    "id",
-                ],
-            }),
-        });
-
-        const json = await res.json();
-        result = JSON.stringify(json);
+        let fields = {
+            fields: [
+                "name",
+                "vocabulary_known_coverage",
+                "vocabulary_in_progress_coverage",
+                "is_built_in",
+                "id",
+            ],
+        };
+        const json = await (
+            await jpdbRequest("list-user-decks", fields)
+        ).json();
         decks = json.decks.map(
             (it: [string, number, number, boolean, number]) => {
                 let [name, known_coverage, learning_coverage, is_built_in, id] =
