@@ -17,14 +17,20 @@
         vocabs: Vocab[];
     }
 
+    // top part
     let token: string = "";
     let result: string = "";
+    // deck manager
     let decks: Deck[] = [];
-    let selected_decks: Deck[] = [];
     let min_coverage = 80;
     let min_learning = 80;
     let filter_builtin = false;
+
+    // deck merger
+    let selected_decks: Deck[] = [];
     let new_deck_name = "";
+    let min_occurences = 1;
+    let last_created_deck: { name: string; id: number } | null = null;
 
     async function jpdbRequest(url: string, body: object): Promise<Response> {
         let headers = new Headers();
@@ -115,11 +121,29 @@
             ).json()
         ).id;
     }
+
+    function merge_vocab(vocabss: Vocab[][]): Vocab[] {
+        const merged: Vocab[] = [];
+        for (const vocabs of vocabss) {
+            for (const vocab of vocabs) {
+                const el = merged.find(
+                    (it) => it.vid === vocab.vid && it.sid === vocab.sid
+                );
+                if (el != null) {
+                    el.occurences += vocab.occurences;
+                } else {
+                    merged.push({ ...vocab });
+                }
+            }
+        }
+        return merged;
+    }
 </script>
 
 <p>
-    Put your API Token here (it won't get send anywhere except jpdb.io). Don't
-    share it with anyone!
+    Put your API Token here (from the bottom of <a
+        href="https://jpdb.io/settings">jpdb.io/settings</a
+    >), it won't get send anywhere except jpdb.io. Don't share it with anyone!
 </p>
 <input bind:value={token} type="password" />
 <button type="button" on:click={doPing}>Ping</button>
@@ -186,18 +210,37 @@ Filter builtin:
             Name of new deck
             <input bind:value={new_deck_name} type="text" />
         </p>
+
+        <p>
+            min occurences:
+            <input bind:value={min_occurences} type="number" />
+        </p>
         <button
             on:click={async () => {
                 if (new_deck_name !== "") {
-                    let deck_id = await createNewDeck(new_deck_name);
+                    const deck_id = await createNewDeck(new_deck_name);
+                    last_created_deck = { id: deck_id, name: new_deck_name };
+                    const vocabss = [];
                     for (const deck of selected_decks) {
                         const deck_with_vocab = await fetchDeckVocab(deck);
-                        await addVocabToDeck(deck_id, deck_with_vocab.vocabs);
-                        console.log("Adding" + deck.name);
+                        vocabss.push(deck_with_vocab.vocabs);
                     }
+                    const vocabs = merge_vocab(vocabss).filter(
+                        (it) => it.occurences >= min_occurences
+                    );
+                    await addVocabToDeck(deck_id, vocabs);
                 }
             }}>create deck</button
         >
+        {#if last_created_deck != null}
+            <p>
+                Last created:
+                {last_created_deck.name}
+                <a href="https://jpdb.io/deck?id={last_created_deck.id}"
+                    >[jpdb]</a
+                >
+            </p>
+        {/if}
     </div>
 </div>
 
