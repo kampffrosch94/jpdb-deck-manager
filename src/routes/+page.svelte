@@ -218,8 +218,8 @@ Filter builtin:
         <button
             on:click={async () => {
                 if (new_deck_name !== "") {
+                    last_created_deck = null
                     const deck_id = await createNewDeck(new_deck_name);
-                    last_created_deck = { id: deck_id, name: new_deck_name };
                     const vocabss = [];
                     for (const deck of selected_decks) {
                         const deck_with_vocab = await fetchDeckVocab(deck);
@@ -229,6 +229,7 @@ Filter builtin:
                         (it) => it.occurences >= min_occurences
                     );
                     await addVocabToDeck(deck_id, vocabs);
+                    last_created_deck = { id: deck_id, name: new_deck_name };
                 }
             }}>create deck</button
         >
