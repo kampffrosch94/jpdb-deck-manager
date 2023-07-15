@@ -17,6 +17,12 @@
         vocabs: Vocab[];
     }
 
+    enum UnificationStrategy {
+        Merge,
+        Intersect,
+        BijakMerge,
+    }
+
     // top part
     let token: string = "";
     let result: string = "";
@@ -30,6 +36,8 @@
     let selected_decks: Deck[] = [];
     let new_deck_name = "";
     let min_occurences = 1;
+    let min_decks = 1;
+    let strat: UnificationStrategy = UnificationStrategy.Merge;
     let last_created_deck: { name: string; id: number } | null = null;
 
     async function jpdbRequest(url: string, body: object): Promise<Response> {
@@ -122,8 +130,11 @@
         ).id;
     }
 
-    function merge_vocab(vocabss: Vocab[][]): Vocab[] {
-        const merged: Vocab[] = [];
+    function merge_vocab(vocabss: Vocab[][], min_decks: number): Vocab[] {
+        interface VocabWithDeckCount extends Vocab {
+            decks: number;
+        }
+        const merged: VocabWithDeckCount[] = [];
         for (const vocabs of vocabss) {
             for (const vocab of vocabs) {
                 const el = merged.find(
@@ -131,12 +142,13 @@
                 );
                 if (el != null) {
                     el.occurences += vocab.occurences;
+                    el.decks += 1;
                 } else {
-                    merged.push({ ...vocab });
+                    merged.push({ decks: 1, ...vocab });
                 }
             }
         }
-        return merged;
+        return merged.filter((it) => it.decks >= min_decks);
     }
 </script>
 
@@ -215,17 +227,75 @@ Filter builtin:
             min occurences:
             <input bind:value={min_occurences} type="number" />
         </p>
+
+        <p>
+            <label
+                title={"Merges decks into new deck, adds up all vocab occurences, then removes all vocab where occurences < min_occurences"}
+            >
+                <input
+                    type="radio"
+                    bind:group={strat}
+                    name="strat"
+                    value={UnificationStrategy.Merge}
+                />
+                Merge
+            </label>
+
+            <label
+                title={"Only adds those words into the new deck that appear in all decks. Then removes all where occurences < min_occurences"}
+            >
+                <input
+                    type="radio"
+                    bind:group={strat}
+                    name="strat"
+                    value={UnificationStrategy.Intersect}
+                />
+                Intersect
+            </label>
+
+            <label
+                title={"The BijakMerge (named after its inventor) works just like the regular merge, \
+but also needs a minimum number of decks for a word to appear in for it to be included."}
+            >
+                <input
+                    type="radio"
+                    bind:group={strat}
+                    name="strat"
+                    value={UnificationStrategy.BijakMerge}
+                />
+                BijakMerge
+            </label>
+        </p>
+        {#if strat == UnificationStrategy.BijakMerge}
+            <p>
+                min decks:
+                <input bind:value={min_decks} type="number" />
+            </p>
+        {/if}
+
         <button
             on:click={async () => {
                 if (new_deck_name !== "") {
-                    last_created_deck = null
+                    last_created_deck = null;
                     const deck_id = await createNewDeck(new_deck_name);
                     const vocabss = [];
                     for (const deck of selected_decks) {
                         const deck_with_vocab = await fetchDeckVocab(deck);
                         vocabss.push(deck_with_vocab.vocabs);
                     }
-                    const vocabs = merge_vocab(vocabss).filter(
+                    let vocabs;
+                    switch (strat) {
+                        case UnificationStrategy.Merge:
+                            vocabs = merge_vocab(vocabss, 1);
+                            break;
+                        case UnificationStrategy.Intersect:
+                            vocabs = merge_vocab(vocabss, vocabss.length);
+                            break;
+                        case UnificationStrategy.BijakMerge:
+                            vocabs = merge_vocab(vocabss, min_decks);
+                            break;
+                    }
+                    vocabs = vocabs.filter(
                         (it) => it.occurences >= min_occurences
                     );
                     await addVocabToDeck(deck_id, vocabs);
