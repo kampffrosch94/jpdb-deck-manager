@@ -6,12 +6,12 @@
 		<meta name="viewport" content="width=device-width" />
 		
 		<link href="./_app/immutable/assets/2.c0396331.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.2b23736f.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/index.d70738cb.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.7d375f17.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.a4c4ec79.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/0.84cab9cf.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/2.ea5d2987.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.d39d082f.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.b2c43475.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.8afb8472.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.bbce6bcc.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.95acff10.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/2.f24d2101.js">
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">
@@ -49,6 +49,20 @@ Filter builtin:
 
         <p>min occurences:
             <input type="number" value="1"></p>
+
+        <p><label title="Merges decks into new deck, adds up all vocab occurences, then removes all vocab where occurences < min_occurences"><input type="radio" name="strat" value="0" checked>
+                Merge
+            </label>
+
+            <label title="Only adds those words into the new deck that appear in all decks. Then removes all where occurences < min_occurences"><input type="radio" name="strat" value="1">
+                Intersect
+            </label>
+
+            <label title="The BijakMerge (named after its inventor) works just like the regular merge, but also needs a minimum number of decks for a word to appear in for it to be included."><input type="radio" name="strat" value="2">
+                BijakMerge
+            </label></p>
+        
+
         <button>create deck</button>
         </div>
 </div>
@@ -57,7 +71,7 @@ Filter builtin:
 			
 			<script>
 				{
-					__sveltekit_1ko59ti = {
+					__sveltekit_rkt2s7 = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -67,8 +81,8 @@ Filter builtin:
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.2b23736f.js"),
-						import("./_app/immutable/entry/app.a4c4ec79.js")
+						import("./_app/immutable/entry/start.d39d082f.js"),
+						import("./_app/immutable/entry/app.bbce6bcc.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2],
