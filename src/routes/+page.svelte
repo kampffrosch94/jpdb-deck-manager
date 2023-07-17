@@ -206,6 +206,23 @@ Filter builtin:
                 {/if}
             {/each}
         </table>
+        {#if decks.length > 0}
+            <button
+                on:click={async () => {
+                    for (const deck of decks) {
+                        if (
+                            deck.known_coverage > min_coverage &&
+                            deck.learning_coverage > min_learning &&
+                            (deck.is_built_in || !filter_builtin)
+                        ) {
+                            selected_decks.push(deck);
+                        }
+                    }
+                    // update for svelte
+                    selected_decks = selected_decks;
+                }}>add all</button
+            >
+        {/if}
     </div>
     <div id="deckmerger_div">
         <h3>Deckmerger</h3>
