@@ -184,7 +184,7 @@ Filter builtin:
                 <th>is_built_in</th>
             </tr>
             {#each decks as deck}
-                {#if deck.known_coverage > min_coverage && deck.learning_coverage > min_learning && (deck.is_built_in || !filter_builtin)}
+                {#if deck.known_coverage >= min_coverage && deck.learning_coverage >= min_learning && (deck.is_built_in || !filter_builtin)}
                     <tr>
                         <td>
                             <a
