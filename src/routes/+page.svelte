@@ -13,6 +13,39 @@
         occurences: number;
     }
 
+    // lifted from the breader, :ikneel:
+    type CardState = string[] &
+        (
+            | [
+                  | "new"
+                  | "learning"
+                  | "known"
+                  | "never-forget"
+                  | "due"
+                  | "failed"
+                  | "suspended"
+                  | "blacklisted"
+              ]
+            | [
+                  "redundant",
+                  (
+                      | "learning"
+                      | "known"
+                      | "never-forget"
+                      | "due"
+                      | "failed"
+                      | "suspended"
+                  )
+              ]
+            | ["locked", "new" | "due" | "failed"]
+            | ["redundant", "locked"] // Weird outlier, might either be due or failed
+            | ["not-in-deck"]
+        );
+
+    interface VocabWithState extends Vocab {
+        state: CardState;
+    }
+
     interface DeckWithVocab extends Deck {
         vocabs: Vocab[];
     }
@@ -39,6 +72,16 @@
     let min_decks = 1;
     let strat: UnificationStrategy = UnificationStrategy.Merge;
     let last_created_deck: { name: string; id: number } | null = null;
+    let enable_state_filter = false;
+    let state_filter_option = [
+        "new",
+        "locked",
+        "learning",
+        "known",
+        "due",
+        "failed",
+    ];
+    let state_filter = state_filter_option[0];
 
     async function jpdbRequest(url: string, body: object): Promise<Response> {
         let headers = new Headers();
@@ -103,6 +146,24 @@
             vocabs.push(vocab);
         }
         return { vocabs: vocabs, ...deck };
+    }
+
+    async function lookupVocab(vocabs: Vocab[]): Promise<VocabWithState[]> {
+        const ids = vocabs.map((it) => [it.vid, it.sid]);
+        const json = await (
+            await jpdbRequest("lookup-vocabulary", {
+                list: ids,
+                fields: ["card_state"],
+            })
+        ).json();
+        let r = [];
+        for (let i = 0; i < json.vocabulary_info.length; i++) {
+            r.push({
+                state: json.vocabulary_info[i][0],
+                ...vocabs[i],
+            });
+        }
+        return r;
     }
 
     async function addVocabToDeck(id: number, vocabs: Vocab[]) {
@@ -290,11 +351,24 @@ but also needs a minimum number of decks for a word to appear in for it to be in
             </p>
         {/if}
 
+        <p>
+            Filter for card state?
+            <input type="checkbox" bind:checked={enable_state_filter} />
+            {#if enable_state_filter}
+                <select bind:value={state_filter}>
+                    {#each state_filter_option as option}
+                        <option value={option}>
+                            {option}
+                        </option>
+                    {/each}
+                </select>
+            {/if}
+        </p>
         <button
+            disabled = {selected_decks.length <= 0}
             on:click={async () => {
                 if (new_deck_name !== "") {
                     last_created_deck = null;
-                    const deck_id = await createNewDeck(new_deck_name);
                     const vocabss = [];
                     for (const deck of selected_decks) {
                         const deck_with_vocab = await fetchDeckVocab(deck);
@@ -315,6 +389,12 @@ but also needs a minimum number of decks for a word to appear in for it to be in
                     vocabs = vocabs.filter(
                         (it) => it.occurences >= min_occurences
                     );
+                    if (enable_state_filter) {
+                        vocabs = (await lookupVocab(vocabs)).filter(
+                            (it) => it.state[0] === state_filter
+                        );
+                    }
+                    const deck_id = await createNewDeck(new_deck_name);
                     await addVocabToDeck(deck_id, vocabs);
                     last_created_deck = { id: deck_id, name: new_deck_name };
                 }
