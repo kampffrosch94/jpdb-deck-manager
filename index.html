@@ -6,12 +6,12 @@
 		<meta name="viewport" content="width=device-width" />
 		
 		<link href="./_app/immutable/assets/2.c0396331.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.7d26faab.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/index.b2c43475.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.afe70361.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.43af9cec.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/0.95acff10.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/2.b73484b1.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.ced58752.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.472859ec.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.097492ca.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.bf740acd.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.74ea6f6a.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/2.842a97e3.js">
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">
@@ -64,7 +64,10 @@ Filter builtin:
             </label></p>
         
 
-        <button>create deck</button>
+        <p>Filter for card state?
+            <input type="checkbox">
+            </p>
+        <button disabled>create deck</button>
         </div>
 </div>
 
@@ -72,7 +75,7 @@ Filter builtin:
 			
 			<script>
 				{
-					__sveltekit_nmvw5x = {
+					__sveltekit_1pwcbrr = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -82,8 +85,8 @@ Filter builtin:
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.7d26faab.js"),
-						import("./_app/immutable/entry/app.43af9cec.js")
+						import("./_app/immutable/entry/start.ced58752.js"),
+						import("./_app/immutable/entry/app.bf740acd.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2],
