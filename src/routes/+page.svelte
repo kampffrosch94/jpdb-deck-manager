@@ -80,6 +80,9 @@
         "known",
         "due",
         "failed",
+        "never-forget",
+        "suspended",
+        "blacklisted",
     ];
     let state_filter = state_filter_option[0];
 
@@ -365,7 +368,7 @@ but also needs a minimum number of decks for a word to appear in for it to be in
             {/if}
         </p>
         <button
-            disabled = {selected_decks.length <= 0}
+            disabled={selected_decks.length <= 0}
             on:click={async () => {
                 if (new_deck_name !== "") {
                     last_created_deck = null;
