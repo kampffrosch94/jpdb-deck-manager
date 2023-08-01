@@ -61,6 +61,12 @@
     let result: string = "";
     // deck manager
     let decks: Deck[] = [];
+    $: shown_decks = decks.filter(
+        (deck) =>
+            deck.known_coverage >= min_coverage &&
+            deck.learning_coverage >= min_learning &&
+            (deck.is_built_in || !filter_builtin)
+    );
     let min_coverage = 80;
     let min_learning = 80;
     let filter_builtin = false;
@@ -239,7 +245,7 @@ Filter builtin:
 
 <div class="container">
     <div>
-        <h3>Decklist</h3>
+        <h3>Decklist (showing {shown_decks.length} of {decks.length})</h3>
         <table>
             <tr>
                 <th>name</th>
@@ -247,43 +253,30 @@ Filter builtin:
                 <th>learning coverage</th>
                 <th>is_built_in</th>
             </tr>
-            {#each decks as deck}
-                {#if deck.known_coverage >= min_coverage && deck.learning_coverage >= min_learning && (deck.is_built_in || !filter_builtin)}
-                    <tr>
-                        <td>
-                            <a
-                                href={"#"}
-                                on:click={() => {
-                                    selected_decks.push(deck);
-                                    selected_decks = selected_decks;
-                                }}
-                                >{deck.name}
-                            </a>
-                            <a href="https://jpdb.io/deck?id={deck.id}"
-                                >[jpdb]</a
-                            >
-                        </td>
-                        <td>{deck.known_coverage.toFixed(1)}</td>
-                        <td>{deck.learning_coverage.toFixed(1)}</td>
-                        <td>{deck.is_built_in}</td>
-                    </tr>
-                {/if}
+            {#each shown_decks as deck}
+                <tr>
+                    <td>
+                        <a
+                            href={"#"}
+                            on:click={() => {
+                                selected_decks.push(deck);
+                                selected_decks = selected_decks;
+                            }}
+                            >{deck.name}
+                        </a>
+                        <a href="https://jpdb.io/deck?id={deck.id}">[jpdb]</a>
+                    </td>
+                    <td>{deck.known_coverage.toFixed(1)}</td>
+                    <td>{deck.learning_coverage.toFixed(1)}</td>
+                    <td>{deck.is_built_in}</td>
+                </tr>
             {/each}
         </table>
         {#if decks.length > 0}
             <button
                 on:click={async () => {
-                    for (const deck of decks) {
-                        if (
-                            deck.known_coverage > min_coverage &&
-                            deck.learning_coverage > min_learning &&
-                            (deck.is_built_in || !filter_builtin)
-                        ) {
-                            selected_decks.push(deck);
-                        }
-                    }
-                    // update for svelte
-                    selected_decks = selected_decks;
+                    // update for svelte needs assignment
+                    selected_decks = selected_decks.concat(shown_decks);
                 }}>add all</button
             >
         {/if}
