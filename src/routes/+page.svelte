@@ -44,6 +44,7 @@
 
     interface VocabWithState extends Vocab {
         state: CardState;
+        frequency: number;
     }
 
     interface DeckWithVocab extends Deck {
@@ -78,7 +79,9 @@
     let min_decks = 1;
     let strat: UnificationStrategy = UnificationStrategy.Merge;
     let last_created_deck: { name: string; id: number } | null = null;
-    let enable_state_filter = false;
+
+    // state filter
+    let state_filter_enabled = false;
     let state_filter_option = [
         "new",
         "locked",
@@ -91,6 +94,11 @@
         "blacklisted",
     ];
     let state_filter = state_filter_option[0];
+
+    // frequency filter
+    let frequency_filter_enabled = false;
+    let frequency_filter_min = 1;
+    let frequency_filter_max = 30000;
 
     async function jpdbRequest(url: string, body: object): Promise<Response> {
         let headers = new Headers();
@@ -162,13 +170,14 @@
         const json = await (
             await jpdbRequest("lookup-vocabulary", {
                 list: ids,
-                fields: ["card_state"],
+                fields: ["card_state", "frequency_rank"],
             })
         ).json();
         let r = [];
         for (let i = 0; i < json.vocabulary_info.length; i++) {
             r.push({
                 state: json.vocabulary_info[i][0],
+                frequency: json.vocabulary_info[i][1],
                 ...vocabs[i],
             });
         }
@@ -225,7 +234,7 @@
 <p>
     Put your API Token here (from the bottom of <a
         href="https://jpdb.io/settings">jpdb.io/settings</a
-    >), it won't get send anywhere except jpdb.io. Don't share it with anyone!
+    >), it won't get sent anywhere except jpdb.io. Don't share it with anyone!
 </p>
 <input bind:value={token} type="password" />
 <button type="button" on:click={doPing}>Ping</button>
@@ -349,8 +358,8 @@ but also needs a minimum number of decks for a word to appear in for it to be in
 
         <p>
             Filter for card state?
-            <input type="checkbox" bind:checked={enable_state_filter} />
-            {#if enable_state_filter}
+            <input type="checkbox" bind:checked={state_filter_enabled} />
+            {#if state_filter_enabled}
                 <select bind:value={state_filter}>
                     {#each state_filter_option as option}
                         <option value={option}>
@@ -358,6 +367,24 @@ but also needs a minimum number of decks for a word to appear in for it to be in
                         </option>
                     {/each}
                 </select>
+            {/if}
+        </p>
+        <p>
+            Filter by global frequency?
+            <input type="checkbox" bind:checked={frequency_filter_enabled} />
+            {#if frequency_filter_enabled}
+                <p>
+                    min: <input
+                        bind:value={frequency_filter_min}
+                        type="number"
+                    />
+                </p>
+                <p>
+                    max: <input
+                        bind:value={frequency_filter_max}
+                        type="number"
+                    />
+                </p>
             {/if}
         </p>
         <button
@@ -385,10 +412,20 @@ but also needs a minimum number of decks for a word to appear in for it to be in
                     vocabs = vocabs.filter(
                         (it) => it.occurences >= min_occurences
                     );
-                    if (enable_state_filter) {
-                        vocabs = (await lookupVocab(vocabs)).filter(
-                            (it) => it.state[0] === state_filter
-                        );
+                    if (state_filter_enabled || frequency_filter_enabled) {
+                        vocabs = await lookupVocab(vocabs);
+                        if (state_filter_enabled) {
+                            vocabs = vocabs.filter(
+                                (it) => it.state[0] === state_filter
+                            );
+                        }
+                        if (frequency_filter_enabled) {
+                            vocabs = vocabs.filter(
+                                (it) =>
+                                    frequency_filter_min <= it.frequency &&
+                                    it.frequency <= frequency_filter_max
+                            );
+                        }
                     }
                     const deck_id = await createNewDeck(new_deck_name);
                     await addVocabToDeck(deck_id, vocabs);
