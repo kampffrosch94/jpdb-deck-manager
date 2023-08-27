@@ -133,6 +133,9 @@
         const res = await jpdbRequest("ping", {});
         const json = await res.json();
         result = JSON.stringify(json);
+        if (result == "{}") {
+            result = "Token confirmed as correct."
+        }
     }
 
     async function fetchDecks() {
