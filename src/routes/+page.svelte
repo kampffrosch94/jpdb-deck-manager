@@ -68,8 +68,8 @@
             deck.learning_coverage >= min_learning &&
             (deck.is_built_in || !filter_builtin)
     );
-    let min_coverage = 80;
-    let min_learning = 80;
+    let min_coverage = 0;
+    let min_learning = 0;
     let filter_builtin = false;
 
     // deck merger
