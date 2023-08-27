@@ -257,9 +257,9 @@
         href="https://jpdb.io/settings">jpdb.io/settings</a
     >), it won't get sent anywhere except jpdb.io. Don't share it with anyone!
 </p>
-<p>After you have done this press on fetch user decks.</p>
+<p>After you have done this press fetch user decks.</p>
 <p>
-    You can enter the token on your browsers password manager if you don't wont
+    You can enter the token in your browsers password manager if you don't want
     to input it every time you use this site.
 </p>
 <input bind:value={token} type="password" />
