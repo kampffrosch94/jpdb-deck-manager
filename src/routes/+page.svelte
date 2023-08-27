@@ -57,17 +57,35 @@
         BijakMerge,
     }
 
+    enum SortColumn {
+        Name,
+        Coverage,
+        Learning,
+    }
+
     // top part
     let token: string = "";
     let result: string = "";
     // deck manager
     let decks: Deck[] = [];
-    $: shown_decks = decks.filter(
-        (deck) =>
-            deck.known_coverage >= min_coverage &&
-            deck.learning_coverage >= min_learning &&
-            (deck.is_built_in || !filter_builtin)
-    );
+    let deckSortColumn: SortColumn = SortColumn.Name;
+    $: shown_decks = decks
+        .filter(
+            (deck) =>
+                deck.known_coverage >= min_coverage &&
+                deck.learning_coverage >= min_learning &&
+                (deck.is_built_in || !filter_builtin)
+        )
+        .sort((a: Deck, b: Deck) => {
+            switch (deckSortColumn) {
+                case SortColumn.Name:
+                    return a.name.localeCompare(b.name);
+                case SortColumn.Coverage:
+                    return b.known_coverage - a.known_coverage;
+                case SortColumn.Learning:
+                    return b.learning_coverage - a.learning_coverage;
+            }
+        });
     let min_coverage = 0;
     let min_learning = 0;
     let filter_builtin = false;
@@ -137,8 +155,8 @@
                 return {
                     name: name,
                     id: id,
-                    known_coverage: known_coverage,
-                    learning_coverage: learning_coverage,
+                    known_coverage: known_coverage ?? 0,
+                    learning_coverage: learning_coverage ?? 0,
                     is_built_in: is_built_in,
                 };
             }
@@ -257,9 +275,30 @@ Filter builtin:
         <h3>Decklist (showing {shown_decks.length} of {decks.length})</h3>
         <table>
             <tr>
-                <th>name</th>
-                <th>coverage</th>
-                <th>learning coverage</th>
+                <th on:click={(_) => (deckSortColumn = SortColumn.Name)}>
+                    <i
+                        class={deckSortColumn == SortColumn.Name
+                            ? "sorting_asc"
+                            : "sorting"}
+                    />
+                    name</th
+                >
+                <th on:click={(_) => (deckSortColumn = SortColumn.Coverage)}>
+                    <i
+                        class={deckSortColumn == SortColumn.Coverage
+                            ? "sorting_desc"
+                            : "sorting"}
+                    />
+                    coverage</th
+                >
+                <th on:click={(_) => (deckSortColumn = SortColumn.Learning)}>
+                    <i
+                        class={deckSortColumn == SortColumn.Learning
+                            ? "sorting_desc"
+                            : "sorting"}
+                    />
+                    learning coverage</th
+                >
                 <th>is_built_in</th>
             </tr>
             {#each shown_decks as deck}
@@ -464,5 +503,25 @@ but also needs a minimum number of decks for a word to appear in for it to be in
     .container {
         display: flex;
         gap: 50px;
+    }
+
+    /* https://stackoverflow.com/a/22156412 */
+    .sorting,
+    .sorting_asc,
+    .sorting_desc {
+        padding: 4px 21px 4px 4px;
+        cursor: pointer;
+    }
+    .sorting {
+        background: url(data:image/gif;base64,R0lGODlhCwALAJEAAAAAAP///xUVFf///yH5BAEAAAMALAAAAAALAAsAAAIUnC2nKLnT4or00PvyrQwrPzUZshQAOw==)
+            no-repeat center right;
+    }
+    .sorting_asc {
+        background: url(data:image/gif;base64,R0lGODlhCwALAJEAAAAAAP///xUVFf///yH5BAEAAAMALAAAAAALAAsAAAIRnC2nKLnT4or00Puy3rx7VQAAOw==)
+            no-repeat center right;
+    }
+    .sorting_desc {
+        background: url(data:image/gif;base64,R0lGODlhCwALAJEAAAAAAP///xUVFf///yH5BAEAAAMALAAAAAALAAsAAAIPnI+py+0/hJzz0IruwjsVADs=)
+            no-repeat center right;
     }
 </style>
