@@ -6,12 +6,12 @@
 		<meta name="viewport" content="width=device-width" />
 		
 		<link href="./_app/immutable/assets/2.b2cb14d3.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.c3d33bbe.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.79313feb.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/index.d827bab5.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.f9e5759b.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.29e4693a.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.a1e4b2f9.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.15917c66.js">
 		<link rel="modulepreload" href="./_app/immutable/nodes/0.1d12dee3.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/2.043a50e3.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/2.dcbdfecf.js">
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">
@@ -44,7 +44,11 @@ Filter builtin:
                 <th><i class="sorting svelte-1sg2hnm"></i>
                     coverage</th>
                 <th><i class="sorting svelte-1sg2hnm"></i>
-                    learning coverage</th>
+                    learning<br>coverage</th>
+                <th><i class="sorting svelte-1sg2hnm"></i>
+                    vocab</th>
+                <th><i class="sorting svelte-1sg2hnm"></i>
+                    words</th>
                 <th>is_built_in</th></tr>
             </table>
         </div>
@@ -85,7 +89,7 @@ Filter builtin:
 			
 			<script>
 				{
-					__sveltekit_jert2o = {
+					__sveltekit_18br9jl = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -95,8 +99,8 @@ Filter builtin:
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.c3d33bbe.js"),
-						import("./_app/immutable/entry/app.29e4693a.js")
+						import("./_app/immutable/entry/start.79313feb.js"),
+						import("./_app/immutable/entry/app.15917c66.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2],
