@@ -5,6 +5,8 @@
         known_coverage: number;
         learning_coverage: number;
         is_built_in: boolean;
+        word_count: number;
+        vocab_count: number;
     }
 
     interface Vocab {
@@ -61,6 +63,8 @@
         Name,
         Coverage,
         Learning,
+        WordCount,
+        VocabCount,
     }
 
     // top part
@@ -84,6 +88,10 @@
                     return b.known_coverage - a.known_coverage;
                 case SortColumn.Learning:
                     return b.learning_coverage - a.learning_coverage;
+                case SortColumn.WordCount:
+                    return b.word_count - a.word_count;
+                case SortColumn.VocabCount:
+                    return b.vocab_count - a.vocab_count;
             }
         });
     let min_coverage = 0;
@@ -134,7 +142,7 @@
         const json = await res.json();
         result = JSON.stringify(json);
         if (result == "{}") {
-            result = "Token confirmed as correct."
+            result = "Token confirmed as correct.";
         }
     }
 
@@ -146,21 +154,32 @@
                 "vocabulary_in_progress_coverage",
                 "is_built_in",
                 "id",
+                "word_count",
+                "vocabulary_count"
             ],
         };
         const json = await (
             await jpdbRequest("list-user-decks", fields)
         ).json();
         decks = json.decks.map(
-            (it: [string, number, number, boolean, number]) => {
-                let [name, known_coverage, learning_coverage, is_built_in, id] =
-                    it;
+            (it: [string, number, number, boolean, number, number, number]) => {
+                let [
+                    name,
+                    known_coverage,
+                    learning_coverage,
+                    is_built_in,
+                    id,
+                    word_count,
+                    vocab_count,
+                ] = it;
                 return {
                     name: name,
                     id: id,
                     known_coverage: known_coverage ?? 0,
                     learning_coverage: learning_coverage ?? 0,
                     is_built_in: is_built_in,
+                    word_count: word_count,
+                    vocab_count: vocab_count,
                 };
             }
         );
@@ -305,7 +324,23 @@ Filter builtin:
                             ? "sorting_desc"
                             : "sorting"}
                     />
-                    learning coverage</th
+                    learning<br/>coverage</th
+                >
+                <th on:click={(_) => (deckSortColumn = SortColumn.VocabCount)}>
+                    <i
+                        class={deckSortColumn == SortColumn.VocabCount
+                            ? "sorting_desc"
+                            : "sorting"}
+                    />
+                    vocab</th
+                >
+                <th on:click={(_) => (deckSortColumn = SortColumn.WordCount)}>
+                    <i
+                        class={deckSortColumn == SortColumn.WordCount
+                            ? "sorting_desc"
+                            : "sorting"}
+                    />
+                    words</th
                 >
                 <th>is_built_in</th>
             </tr>
@@ -322,9 +357,11 @@ Filter builtin:
                         </a>
                         <a href="https://jpdb.io/deck?id={deck.id}">[jpdb]</a>
                     </td>
-                    <td>{deck.known_coverage.toFixed(1)}</td>
-                    <td>{deck.learning_coverage.toFixed(1)}</td>
-                    <td>{deck.is_built_in}</td>
+                    <td style="text-align: right;">{deck.known_coverage.toFixed(1)}</td>
+                    <td style="text-align: right;">{deck.learning_coverage.toFixed(1)}</td>
+                    <td style="text-align: right;">{deck.vocab_count}</td>
+                    <td style="text-align: right;">{deck.word_count}</td>
+                    <td style="text-align: center;">{deck.is_built_in}</td>
                 </tr>
             {/each}
         </table>
