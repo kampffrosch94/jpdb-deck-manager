@@ -355,7 +355,7 @@ Filter builtin:
                             }}
                             >{deck.name}
                         </a>
-                        <a href="https://jpdb.io/deck?id={deck.id}">[jpdb]</a>
+                        <a target="_blank" href="https://jpdb.io/deck?id={deck.id}">[jpdb]</a>
                     </td>
                     <td style="text-align: right;">{deck.known_coverage.toFixed(1)}</td>
                     <td style="text-align: right;">{deck.learning_coverage.toFixed(1)}</td>
@@ -521,7 +521,7 @@ but also needs a minimum number of decks for a word to appear in for it to be in
             <p>
                 Last created:
                 {last_created_deck.name}
-                <a href="https://jpdb.io/deck?id={last_created_deck.id}"
+                <a target="_blank" href="https://jpdb.io/deck?id={last_created_deck.id}"
                     >[jpdb]</a
                 >
             </p>
