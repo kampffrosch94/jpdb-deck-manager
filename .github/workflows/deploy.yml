@@ -1,4 +1,4 @@
-name: "Test"
+name: "Deploy"
 on:
   pull_request:
   push:
@@ -12,7 +12,7 @@ jobs:
         nix_path: nixpkgs=channel:nixos-unstable
     - run: |
         nix develop --command bash -c "npm install && npm run build"
-        touch build/.nojekyll
+        touch dist/.nojekyll
 
     # Deploy to local repo
     - name: Deploy
@@ -20,5 +20,5 @@ jobs:
       env:
         REPO: self
         BRANCH: gh-pages
-        FOLDER: build
+        FOLDER: dist
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
