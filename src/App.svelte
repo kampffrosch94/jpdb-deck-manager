@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DeckManager from "./lib/DeckManager.svelte";
+  import DeckManager from "./components/DeckManager.svelte";
 </script>
 
 <main>

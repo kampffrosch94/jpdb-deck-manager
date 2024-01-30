@@ -1,57 +1,7 @@
 <script lang="ts">
-    interface Deck {
-        name: string;
-        id: number;
-        known_coverage: number;
-        learning_coverage: number;
-        is_built_in: boolean;
-        word_count: number;
-        vocab_count: number;
-    }
-
-    interface Vocab {
-        vid: number;
-        sid: number;
-        occurences: number;
-    }
-
-    // lifted from the breader, :ikneel:
-    type CardState = string[] &
-        (
-            | [
-                  | "new"
-                  | "learning"
-                  | "known"
-                  | "never-forget"
-                  | "due"
-                  | "failed"
-                  | "suspended"
-                  | "blacklisted"
-              ]
-            | [
-                  "redundant",
-                  (
-                      | "learning"
-                      | "known"
-                      | "never-forget"
-                      | "due"
-                      | "failed"
-                      | "suspended"
-                  )
-              ]
-            | ["locked", "new" | "due" | "failed"]
-            | ["redundant", "locked"] // Weird outlier, might either be due or failed
-            | ["not-in-deck"]
-        );
-
-    interface VocabWithState extends Vocab {
-        state: CardState;
-        frequency: number;
-    }
-
-    interface DeckWithVocab extends Deck {
-        vocabs: Vocab[];
-    }
+    import DeckList from "./DeckList.svelte";
+    import "../util/jpdb_api";
+    import { jpdbRequest } from "../util/jpdb_api";
 
     enum UnificationStrategy {
         Merge,
@@ -66,6 +16,7 @@
         WordCount,
         VocabCount,
     }
+    
 
     // top part
     let token: string = "";
@@ -126,19 +77,9 @@
     let frequency_filter_min = 1;
     let frequency_filter_max = 30000;
 
-    async function jpdbRequest(url: string, body: object): Promise<Response> {
-        let headers = new Headers();
-        headers.set("Authorization", "Bearer " + token);
-        headers.set("Content-Type", "application/json");
-        return await fetch("https://jpdb.io/api/v1/" + url, {
-            headers: headers,
-            method: "POST",
-            body: JSON.stringify(body),
-        });
-    }
 
     async function doPing() {
-        const res = await jpdbRequest("ping", {});
+        const res = await jpdbRequest("ping", {}, token);
         const json = await res.json();
         result = JSON.stringify(json);
         if (result == "{}") {
@@ -159,7 +100,7 @@
             ],
         };
         const json = await (
-            await jpdbRequest("list-user-decks", fields)
+            await jpdbRequest("list-user-decks", fields, token)
         ).json();
         decks = json.decks.map(
             (it: [string, number, number, boolean, number, number, number]) => {
@@ -191,7 +132,7 @@
             await jpdbRequest("deck/list-vocabulary", {
                 id: deck.id,
                 fetch_occurences: true,
-            })
+            }, token)
         ).json();
         let vocabs = [];
         for (let i = 0; i < json.vocabulary.length; i++) {
@@ -211,7 +152,7 @@
             await jpdbRequest("lookup-vocabulary", {
                 list: ids,
                 fields: ["card_state", "frequency_rank"],
-            })
+            }, token)
         ).json();
         let r = [];
         for (let i = 0; i < json.vocabulary_info.length; i++) {
@@ -236,7 +177,7 @@
                 id: id,
                 vocabulary: vocabulary,
                 occurences: occurences,
-            })
+            }, token)
         ).json();
         result = JSON.stringify(json);
     }
@@ -244,7 +185,7 @@
     async function createNewDeck(name: String): Promise<number> {
         return (
             await (
-                await jpdbRequest("deck/create-empty", { name: name })
+                await jpdbRequest("deck/create-empty", { name: name }, token)
             ).json()
         ).id;
     }
@@ -297,6 +238,7 @@ Min learning coverage:
 Filter builtin:
 <input bind:checked={filter_builtin} type="checkbox" />
 
+<DeckList/>
 <div class="container">
     <div>
         <h3>Decklist (showing {shown_decks.length} of {decks.length})</h3>
