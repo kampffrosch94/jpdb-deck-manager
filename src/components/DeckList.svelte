@@ -7,14 +7,21 @@
     export let decks: Deck[];
 
     enum SortColumn {
+        None, // this is the deck order as it appears in jpdb
         Name,
         Coverage,
         Learning,
         WordCount,
         VocabCount,
     }
+    
+    let deckSortColumn: SortColumn = SortColumn.None;
 
-    let deckSortColumn: SortColumn = SortColumn.Name;
+    // reset sort on refetch
+    $: if(decks.length > 0) {
+        deckSortColumn = SortColumn.None;
+    }
+
     $: shown_decks = decks
         .filter(
             (deck) =>
@@ -24,6 +31,8 @@
         )
         .sort((a: Deck, b: Deck) => {
             switch (deckSortColumn) {
+                case SortColumn.None:
+                    return 0;
                 case SortColumn.Name:
                     return a.name.localeCompare(b.name);
                 case SortColumn.Coverage:

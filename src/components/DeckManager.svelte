@@ -50,7 +50,6 @@
                 };
             },
         );
-        decks.sort((a: Deck, b: Deck) => a.name.localeCompare(b.name)); // sort by name
     }
 </script>
 
