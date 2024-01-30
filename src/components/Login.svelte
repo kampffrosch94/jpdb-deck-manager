@@ -24,9 +24,5 @@
     to input it every time you use this site.
 </p>
 <input bind:value={$token} type="password" />
-<button type="button" on:click={doPing}>Ping</button>
+<button type="button" on:click={doPing}>Confirm</button>
 
-<p>Result:</p>
-<pre>
-    {$result}
-</pre>

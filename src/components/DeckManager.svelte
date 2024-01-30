@@ -57,13 +57,9 @@
 {#if !$logged_in}
     <Login />
 {:else}
+    <p>Result:</p>
+    <pre>{$result}</pre>
     <button type="button" on:click={fetchDecks}>Fetch user decks</button>
-    Min coverage:
-    <input bind:value={min_coverage} type="number" />
-    Min learning coverage:
-    <input bind:value={min_learning} type="number" />
-    Filter builtin:
-    <input bind:checked={filter_builtin} type="checkbox" />
 
     <div class="container">
         <DeckList {decks} {min_coverage} {min_learning} {filter_builtin} />

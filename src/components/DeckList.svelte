@@ -40,6 +40,12 @@
 
 <div>
     <h3>Decklist (showing {shown_decks.length} of {decks.length})</h3>
+    Min coverage:
+    <input bind:value={min_coverage} type="number" />
+    Min learning coverage:
+    <input bind:value={min_learning} type="number" />
+    Filter builtin:
+    <input bind:checked={filter_builtin} type="checkbox" />
     <table>
         <tr>
             <th on:click={(_) => (deckSortColumn = SortColumn.Name)}>
