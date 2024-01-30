@@ -13,6 +13,7 @@ jobs:
     - run: |
         nix develop --command bash -c "npm install && npm run build"
         touch dist/.nojekyll
+        touch dist/assets/.nojekyll
 
     # Deploy to local repo
     - name: Deploy
