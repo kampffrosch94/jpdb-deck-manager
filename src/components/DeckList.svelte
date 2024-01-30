@@ -22,6 +22,7 @@
         deckSortColumn = SortColumn.None;
     }
 
+    // sort according to chosen method
     $: shown_decks = decks
         .filter(
             (deck) =>
