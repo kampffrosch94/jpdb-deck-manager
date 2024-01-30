@@ -1,7 +1,11 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
     import { logged_in, result, token } from "../state/stores";
     import { jpdbRequest } from "../util/jpdb_api";
 
+
+    const dispatch = createEventDispatcher();
+    
     async function doPing() {
         const res = await jpdbRequest("ping", {}, $token);
         const json = await res.json();
@@ -9,6 +13,7 @@
         if ($result == "{}") {
             $result = "Token confirmed as correct.";
             $logged_in = true;
+            dispatch("login");
         }
     }
 </script>

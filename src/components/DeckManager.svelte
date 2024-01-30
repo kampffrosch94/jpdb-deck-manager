@@ -62,7 +62,7 @@
 </script>
 
 {#if !$logged_in}
-    <Login />
+    <Login on:login={fetchDecks}/>
 {:else}
     <a
         href={"#"}
