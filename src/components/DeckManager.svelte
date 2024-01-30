@@ -2,6 +2,7 @@
     import DeckList from "./DeckList.svelte";
     import "../util/jpdb_api";
     import { jpdbRequest } from "../util/jpdb_api";
+    import { selected_decks } from "../state/stores";
 
     enum UnificationStrategy {
         Merge,
@@ -21,7 +22,6 @@
     let filter_builtin = false;
 
     // deck merger
-    let selected_decks: Deck[] = [];
     let new_deck_name = "";
     let min_occurences = 1;
     let min_decks = 1;
@@ -217,12 +217,12 @@ Filter builtin:
     <div id="deckmerger_div">
         <h3>Deckmerger</h3>
         selected decks:<br />
-        {#each selected_decks as deck}
+        {#each $selected_decks as deck}
             <p>{deck.name}</p>
         {/each}
         <button
             on:click={() => {
-                selected_decks = [];
+                $selected_decks = [];
             }}>Reset selection</button
         >
         <p>
@@ -312,12 +312,12 @@ but also needs a minimum number of decks for a word to appear in for it to be in
             {/if}
         </p>
         <button
-            disabled={selected_decks.length <= 0}
+            disabled={$selected_decks.length <= 0}
             on:click={async () => {
                 if (new_deck_name !== "") {
                     last_created_deck = null;
                     const vocabss = [];
-                    for (const deck of selected_decks) {
+                    for (const deck of $selected_decks) {
                         const deck_with_vocab = await fetchDeckVocab(deck);
                         vocabss.push(deck_with_vocab.vocabs);
                     }

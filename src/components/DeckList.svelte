@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { selected_decks } from "../state/stores";
+
     export let min_coverage: number;
     export let min_learning: number;
     export let filter_builtin: boolean;
@@ -11,8 +13,6 @@
         WordCount,
         VocabCount,
     }
-
-    let selected_decks: Deck[] = []; // todo make store
 
     let deckSortColumn: SortColumn = SortColumn.Name;
     $: shown_decks = decks
@@ -89,9 +89,10 @@
                 <td>
                     <a
                         href={"#"}
-                        on:click={() => {
-                            selected_decks.push(deck);
-                            selected_decks = selected_decks;
+                        on:click={(e) => {
+                            e.preventDefault();
+                            $selected_decks.push(deck);
+                            $selected_decks = $selected_decks; //update subscribers
                         }}
                         >{deck.name}
                     </a>
@@ -114,8 +115,8 @@
     {#if decks.length > 0}
         <button
             on:click={async () => {
-                // update for svelte needs assignment
-                selected_decks = selected_decks.concat(shown_decks);
+                $selected_decks.concat(shown_decks);
+                $selected_decks = $selected_decks; //update subscribers
             }}>add all</button
         >
     {/if}
