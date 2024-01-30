@@ -82,7 +82,7 @@
     >
     <p>Result:</p>
     <pre>{$result}</pre>
-    <button type="button" on:click={fetchDecks}>Fetch user decks</button>
+    <button type="button" on:click={fetchDecks}>Reload decks</button>
 
     <div class="container">
         <DeckList {decks} {min_coverage} {min_learning} {filter_builtin} />
