@@ -6,10 +6,12 @@
     import DeckMerger from "./DeckMerger.svelte";
     import DeckYeeter from "./DeckYeeter.svelte";
     import Login from "./Login.svelte";
+    import DeckCoverage from "./DeckCoverage.svelte";
 
     enum CurrentPage {
         DeckMerger,
         DeckYeeter,
+        DeckCoverage,
     }
     let currentPage = CurrentPage.DeckMerger;
 
@@ -80,6 +82,14 @@
             $selected_decks = [];
         }}>DeckYeeter</a
     >
+    <a
+        href={"#"}
+        on:click={(e) => {
+            e.preventDefault();
+            currentPage = CurrentPage.DeckCoverage;
+            $selected_decks = [];
+        }}>DeckCoverage</a
+    >
     <p>Result:</p>
     <pre>{$result}</pre>
     <button type="button" on:click={fetchDecks}>Reload decks</button>
@@ -91,6 +101,9 @@
         {/if}
         {#if currentPage === CurrentPage.DeckYeeter}
             <DeckYeeter on:deleted_decks={fetchDecks} />
+        {/if}
+        {#if currentPage === CurrentPage.DeckCoverage}
+            <DeckCoverage />
         {/if}
     </div>
 {/if}
