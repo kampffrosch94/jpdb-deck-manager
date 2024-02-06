@@ -16,10 +16,22 @@
         let vocab = await lookupVocab($token, fetched.vocabs);
         let learnahead_tmp: [number, number][] = [];
         let attempts = [
-            50, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 6000, 8000,
-            10000, 20000, 100000,
+            0, 1, 50, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 6000,
+            8000, 10000, 20000, 100000,
         ];
-        max_learnable = vocab.length - vocab.filter(isKnownWord).length;
+
+        let considered = vocab.filter((v) => "blacklisted" != v.state[0]);
+        max_learnable =
+            considered.length - considered.filter(isKnownWord).length;
+        max_learnable = considered.filter((w) => !isKnownWord(w)).length;
+        console.log(
+            "" +
+                considered.length +
+                " - " +
+                considered.filter(isKnownWord).length +
+                " = " +
+                max_learnable,
+        );
         for (let attempt of attempts) {
             let n = Math.min(attempt, max_learnable);
             let coverage = learnAheadCoverage(vocab, n);
@@ -32,17 +44,18 @@
         deck = fetched;
     }
 
+    let wordtolearn = "";
+
     function isKnownWord(v: VocabWithState): boolean {
         return (
-            [
-                "known",
-                "never-forget",
-                "due",
-                "failed",
-                "redundant",
-                "learning",
-            ].includes(v.state[0]) ||
-            (v.state[0] === "locked" && v.state[1] !== "new")
+            ["known", "never-forget", "due", "failed", "learning"].includes(
+                v.state[0],
+            ) ||
+            // cards that are both locked and failed don't count as known, while not locked and failed cards do
+            // (for learning coverage)
+            (v.state[0] === "locked" && v.state[1] === "due") ||
+            (v.state[0] === "redundant" && v.state[1] !== "suspended") ||
+            (v.state[0] === "redundant" && v.state[1] !== "locked")
         );
     }
 
@@ -60,9 +73,14 @@
         learnahead: number,
     ): number {
         const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
-        const deep_copy = JSON.parse(JSON.stringify(sorted));
+        let considered = sorted.filter((v) => "blacklisted" != v.state[0]);
+        const deep_copy: VocabWithState[] = JSON.parse(
+            JSON.stringify(considered),
+        );
         let i = 0;
         let j = 0;
+        let w = deep_copy.find((v) => !isKnownWord(v));
+        wordtolearn = "" + w.vid + " , " + w.sid;
         while (i < deep_copy.length) {
             if (j == learnahead) {
                 break;
@@ -113,6 +131,8 @@
             {/each}
         </table>
     {/if}
+
+    {wordtolearn}
 </div>
 
 <style>

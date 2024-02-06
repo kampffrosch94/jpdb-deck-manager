@@ -38,6 +38,7 @@ declare global {
                     | "due"
                     | "failed"
                     | "suspended"
+                    | "locked"
                 )
             ]
             | ["locked", "new" | "due" | "failed"]
