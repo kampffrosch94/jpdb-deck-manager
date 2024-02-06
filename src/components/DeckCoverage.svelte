@@ -18,11 +18,8 @@
         vocab = await lookupVocab($token, deck.vocabs);
     }
 
-    let wordcount = 0;
-    let newish = 0;
-    let considered = [];
     function computeCoverage(vocabs: VocabWithState[]): number {
-        considered = vocabs.filter((v) => "blacklisted" != v.state[0]);
+        let considered = vocabs.filter((v) => "blacklisted" != v.state[0]);
         let kinda_known = considered
             .filter(
                 (v) =>
@@ -38,11 +35,31 @@
             )
             .reduce((acc, v) => acc + v.occurences, 0);
         let all = considered.reduce((acc, v) => acc + v.occurences, 0);
-        wordcount = all;
-        newish = considered.filter((v) =>
-            ["new", "locked", "suspended"].includes(v.state[0]),
-        ).length;
         return 100.0 * (kinda_known / all);
+    }
+
+    function learnAheadCoverage(
+        vocabs: VocabWithState[],
+        learnahead: number,
+    ): number {
+        let sorted = vocabs.toSorted((a, b) => b.occurences - a.occurences);
+        let i = 0;
+        let j = 0;
+        while (i < sorted.length) {
+            if (j == learnahead) {
+                break;
+            }
+            let v = sorted[i];
+            if (
+                ["suspended", "new"].includes(v.state[0]) ||
+                (v.state[0] === "locked" && v.state[1] === "new")
+            ) {
+                v.state[0] = "known";
+                j += 1;
+            }
+            i += 1;
+        }
+        return computeCoverage(sorted);
     }
 </script>
 
@@ -77,16 +94,8 @@
             <td>{vocab != null ? computeCoverage(vocab) : ""}</td>
         </tr>
         <tr>
-            <td>computed wordcount </td>
-            <td>{wordcount}</td>
-        </tr>
-        <tr>
-            <td>learnable </td>
-            <td>{newish}</td>
-        </tr>
-        <tr>
-            <td>considered vocab count </td>
-            <td>{considered.length}</td>
+            <td>computed coverage 100 </td>
+            <td>{vocab != null ? learnAheadCoverage(vocab, 100) : ""}</td>
         </tr>
     </table>
 </div>
