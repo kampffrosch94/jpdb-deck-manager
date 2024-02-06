@@ -1,6 +1,6 @@
 <script lang="ts">
     import { result, selected_decks, token } from "../state/stores";
-    import { jpdbRequest } from "../util/jpdb_api";
+    import { jpdbRequest, fetchDeckVocab, lookupVocab } from "../util/jpdb_api";
 
     enum UnificationStrategy {
         Merge,
@@ -34,51 +34,6 @@
     let frequency_filter_min = 1;
     let frequency_filter_max = 30000;
     
-    async function fetchDeckVocab(deck: Deck): Promise<DeckWithVocab> {
-        const json = await (
-            await jpdbRequest(
-                "deck/list-vocabulary",
-                {
-                    id: deck.id,
-                    fetch_occurences: true,
-                },
-                $token,
-            )
-        ).json();
-        let vocabs = [];
-        for (let i = 0; i < json.vocabulary.length; i++) {
-            let vocab: Vocab = {
-                vid: json.vocabulary[i][0],
-                sid: json.vocabulary[i][1],
-                occurences: json.occurences[i],
-            };
-            vocabs.push(vocab);
-        }
-        return { vocabs: vocabs, ...deck };
-    }
-
-    async function lookupVocab(vocabs: Vocab[]): Promise<VocabWithState[]> {
-        const ids = vocabs.map((it) => [it.vid, it.sid]);
-        const json = await (
-            await jpdbRequest(
-                "lookup-vocabulary",
-                {
-                    list: ids,
-                    fields: ["card_state", "frequency_rank"],
-                },
-                $token,
-            )
-        ).json();
-        let r = [];
-        for (let i = 0; i < json.vocabulary_info.length; i++) {
-            r.push({
-                state: json.vocabulary_info[i][0],
-                frequency: json.vocabulary_info[i][1],
-                ...vocabs[i],
-            });
-        }
-        return r;
-    }
 
     async function addVocabToDeck(id: number, vocabs: Vocab[]) {
         let vocabulary: [number, number][] = [];
@@ -237,7 +192,7 @@ but also needs a minimum number of decks for a word to appear in for it to be in
                     last_created_deck = null;
                     const vocabss = [];
                     for (const deck of $selected_decks) {
-                        const deck_with_vocab = await fetchDeckVocab(deck);
+                        const deck_with_vocab = await fetchDeckVocab($token, deck);
                         vocabss.push(deck_with_vocab.vocabs);
                     }
                     let vocabs;
@@ -256,7 +211,7 @@ but also needs a minimum number of decks for a word to appear in for it to be in
                         (it) => it.occurences >= min_occurences
                     );
                     if (state_filter_enabled || frequency_filter_enabled) {
-                        vocabs = await lookupVocab(vocabs);
+                        vocabs = await lookupVocab($token, vocabs);
                         if (state_filter_enabled) {
                             vocabs = vocabs.filter(
                                 (it) => it.state[0] === state_filter

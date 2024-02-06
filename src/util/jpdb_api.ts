@@ -1,4 +1,4 @@
-export { jpdbRequest };
+export { jpdbRequest, fetchDeckVocab, lookupVocab };
 declare global {
     interface Deck {
         name: string;
@@ -67,4 +67,51 @@ async function jpdbRequest(url: string, body: object, token: string): Promise<Re
         method: "POST",
         body: JSON.stringify(body),
     });
+}
+
+
+async function fetchDeckVocab(token: string, deck: Deck): Promise<DeckWithVocab> {
+    const json = await (
+        await jpdbRequest(
+            "deck/list-vocabulary",
+            {
+                id: deck.id,
+                fetch_occurences: true,
+            },
+            token,
+        )
+    ).json();
+    let vocabs = [];
+    for (let i = 0; i < json.vocabulary.length; i++) {
+        let vocab: Vocab = {
+            vid: json.vocabulary[i][0],
+            sid: json.vocabulary[i][1],
+            occurences: json.occurences[i],
+        };
+        vocabs.push(vocab);
+    }
+    return { vocabs: vocabs, ...deck };
+}
+
+async function lookupVocab(token: string, vocabs: Vocab[]): Promise<VocabWithState[]> {
+    const ids = vocabs.map((it) => [it.vid, it.sid]);
+    const json = await (
+        await jpdbRequest(
+            "lookup-vocabulary",
+            {
+                list: ids,
+                fields: ["card_state", "frequency_rank"],
+            },
+            token,
+        )
+    ).json();
+    let r = [];
+    for (let i = 0; i < json.vocabulary_info.length; i++) {
+        r.push({
+            state: json.vocabulary_info[i][0],
+            frequency: json.vocabulary_info[i][1],
+            ...vocabs[i],
+        });
+    }
+    return r;
 }
