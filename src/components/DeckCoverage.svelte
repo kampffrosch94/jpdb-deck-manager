@@ -65,9 +65,7 @@
     ): number {
         const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
         let considered = sorted.filter((v) => "blacklisted" != v.state[0]);
-        const deep_copy: VocabWithState[] = JSON.parse(
-            JSON.stringify(considered),
-        );
+        const deep_copy: VocabWithState[] = structuredClone(considered);
         let i = 0;
         let j = 0;
         let w = deep_copy.find((v) => !isKnownWord(v));
