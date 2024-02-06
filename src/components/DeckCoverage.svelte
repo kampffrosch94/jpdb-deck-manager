@@ -4,8 +4,10 @@
 
     let deck: DeckWithVocab | undefined;
     $: {
-        let newDeck = $selected_decks[$selected_decks.length - 1];
-        updateDeck(newDeck);
+        if ($selected_decks.length > 0) {
+            let newDeck = $selected_decks[$selected_decks.length - 1];
+            updateDeck(newDeck);
+        }
     }
 
     let learnahead: [number, number][] = [];
@@ -16,22 +18,13 @@
         let vocab = await lookupVocab($token, fetched.vocabs);
         let learnahead_tmp: [number, number][] = [];
         let attempts = [
-            0, 1, 50, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 6000,
-            8000, 10000, 20000, 100000,
+            50, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 6000, 8000,
+            10000, 20000, 100000,
         ];
 
         let considered = vocab.filter((v) => "blacklisted" != v.state[0]);
-        max_learnable =
-            considered.length - considered.filter(isKnownWord).length;
         max_learnable = considered.filter((w) => !isKnownWord(w)).length;
-        console.log(
-            "" +
-                considered.length +
-                " - " +
-                considered.filter(isKnownWord).length +
-                " = " +
-                max_learnable,
-        );
+        //console.log( "" + considered.length + " - " + considered.filter(isKnownWord).length + " = " + max_learnable,);
         for (let attempt of attempts) {
             let n = Math.min(attempt, max_learnable);
             let coverage = learnAheadCoverage(vocab, n);
@@ -43,8 +36,6 @@
         learnahead = learnahead_tmp;
         deck = fetched;
     }
-
-    let wordtolearn = "";
 
     function isKnownWord(v: VocabWithState): boolean {
         return (
@@ -80,7 +71,6 @@
         let i = 0;
         let j = 0;
         let w = deep_copy.find((v) => !isKnownWord(v));
-        wordtolearn = "" + w.vid + " , " + w.sid;
         while (i < deep_copy.length) {
             if (j == learnahead) {
                 break;
@@ -131,8 +121,6 @@
             {/each}
         </table>
     {/if}
-
-    {wordtolearn}
 </div>
 
 <style>
