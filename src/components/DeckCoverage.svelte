@@ -90,7 +90,7 @@
     <h3>Deck coverage prediction for a single deck</h3>
     <p>
         This tool predicts how coverage for a deck will change if you learned
-        new vocab in frequency order.
+        new vocab in local frequency order.
     </p>
     <p>It considers new, locked and suspended cards as learnable.</p>
     <p>Select a deck from the deck list to the left.</p>
