@@ -24,7 +24,18 @@
     function computeCoverage(vocabs: VocabWithState[]): number {
         considered = vocabs.filter((v) => "blacklisted" != v.state[0]);
         let kinda_known = considered
-            .filter((v) => !["new", "locked", "suspended"].includes(v.state[0]))
+            .filter(
+                (v) =>
+                    [
+                        "known",
+                        "never-forget",
+                        "due",
+                        "failed",
+                        "redundant",
+                        "learning",
+                    ].includes(v.state[0]) ||
+                    (v.state[0] === "locked" && v.state[1] !== "new"),
+            )
             .reduce((acc, v) => acc + v.occurences, 0);
         let all = considered.reduce((acc, v) => acc + v.occurences, 0);
         wordcount = all;
