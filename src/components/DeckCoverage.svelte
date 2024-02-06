@@ -2,37 +2,54 @@
     import { selected_decks, token } from "../state/stores";
     import { fetchDeckVocab, lookupVocab } from "../util/jpdb_api";
 
-    interface DeckWithCoveragePrediction extends DeckWithVocab {}
-
-    let deck: DeckWithCoveragePrediction | null = null;
+    let deck: DeckWithVocab | undefined;
     $: {
         let newDeck = $selected_decks[$selected_decks.length - 1];
         updateDeck(newDeck);
     }
 
-    let vocab: VocabWithState[] | null = null;
+    let learnahead: [number, number][] = [];
+    let max_learnable: number = 0;
 
     async function updateDeck(newDeck: Deck) {
         const fetched = await fetchDeckVocab($token, newDeck);
+        let vocab = await lookupVocab($token, fetched.vocabs);
+        let learnahead_tmp: [number, number][] = [];
+        let attempts = [
+            50, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 6000, 8000,
+            10000, 20000, 100000,
+        ];
+        max_learnable = vocab.length - vocab.filter(isKnownWord).length;
+        for (let attempt of attempts) {
+            let n = Math.min(attempt, max_learnable);
+            let coverage = learnAheadCoverage(vocab, n);
+            learnahead_tmp.push([n, coverage]);
+            if (n >= max_learnable) {
+                break;
+            }
+        }
+        learnahead = learnahead_tmp;
         deck = fetched;
-        vocab = await lookupVocab($token, deck.vocabs);
+    }
+
+    function isKnownWord(v: VocabWithState): boolean {
+        return (
+            [
+                "known",
+                "never-forget",
+                "due",
+                "failed",
+                "redundant",
+                "learning",
+            ].includes(v.state[0]) ||
+            (v.state[0] === "locked" && v.state[1] !== "new")
+        );
     }
 
     function computeCoverage(vocabs: VocabWithState[]): number {
         let considered = vocabs.filter((v) => "blacklisted" != v.state[0]);
         let kinda_known = considered
-            .filter(
-                (v) =>
-                    [
-                        "known",
-                        "never-forget",
-                        "due",
-                        "failed",
-                        "redundant",
-                        "learning",
-                    ].includes(v.state[0]) ||
-                    (v.state[0] === "locked" && v.state[1] !== "new"),
-            )
+            .filter(isKnownWord)
             .reduce((acc, v) => acc + v.occurences, 0);
         let all = considered.reduce((acc, v) => acc + v.occurences, 0);
         return 100.0 * (kinda_known / all);
@@ -42,24 +59,22 @@
         vocabs: VocabWithState[],
         learnahead: number,
     ): number {
-        let sorted = vocabs.toSorted((a, b) => b.occurences - a.occurences);
+        const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
+        const deep_copy = JSON.parse(JSON.stringify(sorted));
         let i = 0;
         let j = 0;
-        while (i < sorted.length) {
+        while (i < deep_copy.length) {
             if (j == learnahead) {
                 break;
             }
-            let v = sorted[i];
-            if (
-                ["suspended", "new"].includes(v.state[0]) ||
-                (v.state[0] === "locked" && v.state[1] === "new")
-            ) {
+            let v = deep_copy[i];
+            if (!isKnownWord(v)) {
                 v.state[0] = "known";
                 j += 1;
             }
             i += 1;
         }
-        return computeCoverage(sorted);
+        return computeCoverage(deep_copy);
     }
 </script>
 
@@ -72,32 +87,32 @@
     <p>It considers new, locked and suspended cards as learnable.</p>
     <p>Select a deck from the deck list to the left.</p>
 
-    <table>
-        <tr>
-            <td>Deck name </td>
-            <td>{deck?.name}</td>
-        </tr>
-        <tr>
-            <td>WordCount </td>
-            <td>{deck?.word_count}</td>
-        </tr>
-        <tr>
-            <td>known coverage </td>
-            <td>{deck?.known_coverage.toFixed(2)}</td>
-        </tr>
-        <tr>
-            <td>learning coverage </td>
-            <td>{deck?.learning_coverage}</td>
-        </tr>
-        <tr>
-            <td>computed coverage </td>
-            <td>{vocab != null ? computeCoverage(vocab) : ""}</td>
-        </tr>
-        <tr>
-            <td>computed coverage 100 </td>
-            <td>{vocab != null ? learnAheadCoverage(vocab, 100) : ""}</td>
-        </tr>
-    </table>
+    {#if deck !== undefined}
+        <table>
+            <tr>
+                <td>Deck name </td>
+                <td>{deck?.name}</td>
+            </tr>
+            <tr>
+                <td>WordCount </td>
+                <td>{deck?.word_count}</td>
+            </tr>
+            <tr>
+                <td>known coverage </td>
+                <td>{deck?.known_coverage.toFixed(2)}</td>
+            </tr>
+            <tr>
+                <td>learning coverage </td>
+                <td>{deck?.learning_coverage.toFixed(2)}</td>
+            </tr>
+            {#each learnahead as it}
+                <tr>
+                    <td>learning coverage with {it[0]} extra learned</td>
+                    <td>{it[1].toFixed(2)} </td>
+                </tr>
+            {/each}
+        </table>
+    {/if}
 </div>
 
 <style>
