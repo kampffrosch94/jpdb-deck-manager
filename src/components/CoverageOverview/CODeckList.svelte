@@ -1,10 +1,18 @@
 <script lang="ts">
     import { DataHandler } from "@vincjo/datatables";
     import Th from "../Th.svelte";
-    export let decks: Deck[];
-    const handler = new DataHandler(decks);
+    import { learnAheadCoverage } from "../../util/jpdb_api";
+    export let decks: DeckWithVocabState[];
+    let decks_with_coverage = decks.map((deck) => {
+        return { ...deck, 
+            lc_50: learnAheadCoverage(deck.vocabs, 50),
+            lc_100: learnAheadCoverage(deck.vocabs, 100),
+            lc_custom: learnAheadCoverage(deck.vocabs, 200),
+         };
+    });
+    const handler = new DataHandler(decks_with_coverage);
     const rows = handler.getRows();
-    handler.sortDesc('learning_coverage')
+    handler.sortDesc("learning_coverage");
 </script>
 
 <table>
@@ -14,7 +22,11 @@
             <Th {handler} orderBy="vocab_count">vocab</Th>
             <Th {handler} orderBy="word_count">words</Th>
             <Th {handler} orderBy="known_coverage">Coverage</Th>
-            <Th {handler} orderBy="learning_coverage">Learning<br/>Coverage</Th>
+            <Th {handler} orderBy="learning_coverage">Learning<br />Coverage</Th
+            >
+            <Th {handler} orderBy="lc_50">LC + 50</Th>
+            <Th {handler} orderBy="lc_100">LC + 100</Th>
+            <Th {handler} orderBy="lc_custom">LC + custom</Th>
         </tr>
     </thead>
     <tbody>
@@ -25,11 +37,13 @@
                 <td>{row.word_count}</td>
                 <td>{row.known_coverage.toFixed(2)}</td>
                 <td>{row.learning_coverage.toFixed(2)}</td>
+                <td>{row.lc_50.toFixed(2)}</td>
+                <td>{row.lc_100.toFixed(2)}</td>
+                <td>{row.lc_custom.toFixed(2)}</td>
             </tr>
         {/each}
     </tbody>
 </table>
-
 
 <style>
     td:first-child {

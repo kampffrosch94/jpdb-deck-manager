@@ -1,4 +1,4 @@
-export { jpdbRequest, fetchDeckVocab, lookupVocab, fetchDecks, merge_vocab };
+export { jpdbRequest, fetchDeckVocab, lookupVocab, fetchDecks, merge_vocab, isKnownWord, learnAheadCoverage };
 declare global {
     interface Deck {
         name: string;
@@ -46,13 +46,17 @@ declare global {
             | ["not-in-deck"]
         );
 
-    interface VocabWithState extends Vocab {
+    interface VocabWithStateFrequency extends Vocab {
         state: CardState;
         frequency: number;
     }
 
     interface DeckWithVocab extends Deck {
         vocabs: Vocab[];
+    }
+
+    interface DeckWithVocabState extends Deck {
+        vocabs: VocabWithStateFrequency[];
     }
 }
 
@@ -94,7 +98,7 @@ async function fetchDeckVocab(token: string, deck: Deck): Promise<DeckWithVocab>
     return { vocabs: vocabs, ...deck };
 }
 
-async function lookupVocab(token: string, vocabs: Vocab[]): Promise<VocabWithState[]> {
+async function lookupVocab(token: string, vocabs: Vocab[]): Promise<VocabWithStateFrequency[]> {
     const ids = vocabs.map((it) => [it.vid, it.sid]);
     const json = await (
         await jpdbRequest(
@@ -184,4 +188,51 @@ function merge_vocab(vocabss: Vocab[][], min_decks: number): Vocab[] {
     } else {
         return merged
     }
+}
+
+
+function isKnownWord(v: VocabWithStateFrequency): boolean {
+    return (
+        ["known", "never-forget", "due", "failed", "learning"].includes(
+            v.state[0],
+        ) ||
+        // cards that are both locked and failed don't count as known, while not locked and failed cards do
+        // (for learning coverage)
+        (v.state[0] === "locked" && v.state[1] === "due") ||
+        (v.state[0] === "redundant" && v.state[1] !== "suspended") ||
+        (v.state[0] === "redundant" && v.state[1] !== "locked")
+    );
+}
+
+function computeCoverage(vocabs: VocabWithStateFrequency[]): number {
+    let considered = vocabs.filter((v) => "blacklisted" != v.state[0]);
+    let kinda_known = considered
+        .filter(isKnownWord)
+        .reduce((acc, v) => acc + v.occurences, 0);
+    let all = considered.reduce((acc, v) => acc + v.occurences, 0);
+    return 100.0 * (kinda_known / all);
+}
+
+function learnAheadCoverage(
+    vocabs: VocabWithStateFrequency[],
+    learnahead: number,
+): number {
+    const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
+    let considered = sorted.filter((v) => "blacklisted" != v.state[0]);
+    const deep_copy: VocabWithStateFrequency[] = structuredClone(considered);
+    let i = 0;
+    let j = 0;
+    let w = deep_copy.find((v) => !isKnownWord(v));
+    while (i < deep_copy.length) {
+        if (j == learnahead) {
+            break;
+        }
+        let v = deep_copy[i];
+        if (!isKnownWord(v)) {
+            v.state[0] = "known";
+            j += 1;
+        }
+        i += 1;
+    }
+    return computeCoverage(deep_copy);
 }
