@@ -93,17 +93,16 @@
             e.preventDefault();
             currentPage = CurrentPage.CoverageOverview;
             $selected_decks = [];
-        }}>DeckCoverage</a
+        }}>CoverageOverview</a
     >
     <p>Result:</p>
     <pre>{$result}</pre>
 
-    {#if currentPage === CurrentPage.CoverageOverview}
-        <CoverageOverview {decks} />
-    {:else}
-        <button type="button" on:click={fetchDecks}>Reload decks</button>
-
-        <div class="container">
+    <button type="button" on:click={fetchDecks}>Reload decks</button>
+    <div class="container">
+        {#if currentPage === CurrentPage.CoverageOverview}
+            <CoverageOverview {decks} />
+        {:else}
             <DeckList {decks} />
             {#if currentPage === CurrentPage.DeckMerger}
                 <DeckMerger />
@@ -114,8 +113,8 @@
             {#if currentPage === CurrentPage.DeckCoverage}
                 <DeckCoverage />
             {/if}
-        </div>
-    {/if}
+        {/if}
+    </div>
 {/if}
 
 <style>

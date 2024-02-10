@@ -124,6 +124,7 @@
 <style>
     table tr td:nth-child(2n) {
         background-color: #ffffff;
+        max-width: 500px;
     }
     table tr {
         background-color: #e7e9eb;
