@@ -89,8 +89,7 @@
     {#if decks.length > 0}
         <button
             on:click={async () => {
-                $selected_decks.concat($rows);
-                $selected_decks = $selected_decks; //update subscribers
+                $selected_decks = $selected_decks.concat($rows); //update subscribers
             }}>add all</button
         >
     {/if}
