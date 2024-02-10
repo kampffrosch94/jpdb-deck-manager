@@ -7,20 +7,17 @@
     import DeckYeeter from "./DeckYeeter.svelte";
     import Login from "./Login.svelte";
     import DeckCoverage from "./DeckCoverage.svelte";
+    import CoverageOverview from "./CoverageOverview.svelte";
 
     enum CurrentPage {
         DeckMerger,
         DeckYeeter,
         DeckCoverage,
+        CoverageOverview,
     }
     let currentPage = CurrentPage.DeckMerger;
 
     let decks: Deck[] = [];
-
-    // deck list
-    let min_coverage = 0;
-    let min_learning = 0;
-    let filter_builtin = false;
 
     async function fetchDecks() {
         let fields = {
@@ -64,7 +61,7 @@
 </script>
 
 {#if !$logged_in}
-    <Login on:login={fetchDecks}/>
+    <Login on:login={fetchDecks} />
 {:else}
     <a
         href={"#"}
@@ -90,22 +87,35 @@
             $selected_decks = [];
         }}>DeckCoverage</a
     >
+    <a
+        href={"#"}
+        on:click={(e) => {
+            e.preventDefault();
+            currentPage = CurrentPage.CoverageOverview;
+            $selected_decks = [];
+        }}>DeckCoverage</a
+    >
     <p>Result:</p>
     <pre>{$result}</pre>
-    <button type="button" on:click={fetchDecks}>Reload decks</button>
 
-    <div class="container">
-        <DeckList {decks} {min_coverage} {min_learning} {filter_builtin} />
-        {#if currentPage === CurrentPage.DeckMerger}
-            <DeckMerger />
-        {/if}
-        {#if currentPage === CurrentPage.DeckYeeter}
-            <DeckYeeter on:deleted_decks={fetchDecks} />
-        {/if}
-        {#if currentPage === CurrentPage.DeckCoverage}
-            <DeckCoverage />
-        {/if}
-    </div>
+    {#if currentPage === CurrentPage.CoverageOverview}
+        <CoverageOverview {decks} />
+    {:else}
+        <button type="button" on:click={fetchDecks}>Reload decks</button>
+
+        <div class="container">
+            <DeckList {decks} />
+            {#if currentPage === CurrentPage.DeckMerger}
+                <DeckMerger />
+            {/if}
+            {#if currentPage === CurrentPage.DeckYeeter}
+                <DeckYeeter on:deleted_decks={fetchDecks} />
+            {/if}
+            {#if currentPage === CurrentPage.DeckCoverage}
+                <DeckCoverage />
+            {/if}
+        </div>
+    {/if}
 {/if}
 
 <style>

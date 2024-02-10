@@ -1,9 +1,9 @@
 <script lang="ts">
     import { selected_decks } from "../state/stores";
 
-    export let min_coverage: number;
-    export let min_learning: number;
-    export let filter_builtin: boolean;
+    let min_coverage: number = 0;
+    let min_learning: number = 0;
+    let filter_builtin: boolean = false;
     export let decks: Deck[];
 
     enum SortColumn {
