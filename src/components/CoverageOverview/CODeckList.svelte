@@ -4,18 +4,35 @@
     import { learnAheadCoverage } from "../../util/jpdb_api";
     export let decks: DeckWithVocabState[];
     export let startTime: number;
+
+    let custom_learnahead = 200;
     let decks_with_coverage = decks.map((deck) => {
-        return { ...deck, 
+        return {
+            ...deck,
             lc_50: learnAheadCoverage(deck.vocabs, 50),
             lc_100: learnAheadCoverage(deck.vocabs, 100),
-            lc_custom: learnAheadCoverage(deck.vocabs, 200),
-         };
+            lc_custom: learnAheadCoverage(deck.vocabs, custom_learnahead),
+        };
     });
-    console.log(`[${Date.now() - startTime}] Done with coverage prediction`)
-
-    const handler = new DataHandler(decks_with_coverage);
-    const rows = handler.getRows();
+    console.log(`[${Date.now() - startTime}] Done with coverage prediction`);
+    let handler = new DataHandler(decks_with_coverage);
+    let rows = handler.getRows();
     handler.sortDesc("learning_coverage");
+
+    $: if (custom_learnahead) {
+        console.log("recomputing custom learnahead coverage")
+        decks_with_coverage = decks.map((deck) => {
+            return {
+                ...deck,
+                lc_50: learnAheadCoverage(deck.vocabs, 50),
+                lc_100: learnAheadCoverage(deck.vocabs, 100),
+                lc_custom: learnAheadCoverage(deck.vocabs, custom_learnahead),
+            };
+        });
+        handler = new DataHandler(decks_with_coverage);
+        rows = handler.getRows();
+        handler.sortDesc("lc_custom");
+    }
 </script>
 
 <table>
