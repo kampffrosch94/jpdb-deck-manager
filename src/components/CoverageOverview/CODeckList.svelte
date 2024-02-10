@@ -2,8 +2,7 @@
     import { DataHandler } from "@vincjo/datatables";
     import Th from "../Th.svelte";
     export let decks: Deck[];
-    const relevant_decks = decks.filter(it => it.word_count > it.vocab_count * 3);
-    const handler = new DataHandler(relevant_decks);
+    const handler = new DataHandler(decks);
     const rows = handler.getRows();
     handler.sortDesc('learning_coverage')
 </script>

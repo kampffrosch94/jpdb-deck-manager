@@ -1,4 +1,4 @@
-export { jpdbRequest, fetchDeckVocab, lookupVocab };
+export { jpdbRequest, fetchDeckVocab, lookupVocab, fetchDecks, merge_vocab };
 declare global {
     interface Deck {
         name: string;
@@ -115,4 +115,73 @@ async function lookupVocab(token: string, vocabs: Vocab[]): Promise<VocabWithSta
         });
     }
     return r;
+}
+
+
+
+async function fetchDecks(token: string): Promise<Deck[]> {
+    let fields = {
+        fields: [
+            "name",
+            "vocabulary_known_coverage",
+            "vocabulary_in_progress_coverage",
+            "is_built_in",
+            "id",
+            "word_count",
+            "vocabulary_count",
+        ],
+    };
+    let json = await (
+        await jpdbRequest("list-user-decks", fields, token)
+    ).json();
+    //console.log(json);
+    return json.decks.map(
+        (it: [string, number, number, boolean, number, number, number]) => {
+            let [
+                name,
+                known_coverage,
+                learning_coverage,
+                is_built_in,
+                id,
+                word_count,
+                vocab_count,
+            ] = it;
+            return {
+                name: name,
+                id: id,
+                known_coverage: known_coverage ?? 0,
+                learning_coverage: learning_coverage ?? 0,
+                is_built_in: is_built_in,
+                word_count: word_count,
+                vocab_count: vocab_count,
+            };
+        },
+    );
+}
+
+
+
+function merge_vocab(vocabss: Vocab[][], min_decks: number): Vocab[] {
+    interface VocabWithDeckCount extends Vocab {
+        decks: number;
+    }
+    const merged: VocabWithDeckCount[] = [];
+    for (const vocabs of vocabss) {
+        for (const vocab of vocabs) {
+            const el = merged.find(
+                (it) => it.vid === vocab.vid && it.sid === vocab.sid,
+            );
+            if (el != null) {
+                el.occurences += vocab.occurences;
+                el.decks += 1;
+            } else {
+                merged.push({ decks: 1, ...vocab });
+            }
+        }
+    }
+    if (min_decks > 1) {
+        return merged.filter((it) => it.decks >= min_decks);
+    } else {
+        return merged
+    }
 }

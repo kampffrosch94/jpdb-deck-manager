@@ -1,6 +1,6 @@
 <script lang="ts">
     import { result, selected_decks, token } from "../state/stores";
-    import { jpdbRequest, fetchDeckVocab, lookupVocab } from "../util/jpdb_api";
+    import { jpdbRequest, fetchDeckVocab, lookupVocab, merge_vocab } from "../util/jpdb_api";
 
     enum UnificationStrategy {
         Merge,
@@ -64,26 +64,6 @@
         ).id;
     }
 
-    function merge_vocab(vocabss: Vocab[][], min_decks: number): Vocab[] {
-        interface VocabWithDeckCount extends Vocab {
-            decks: number;
-        }
-        const merged: VocabWithDeckCount[] = [];
-        for (const vocabs of vocabss) {
-            for (const vocab of vocabs) {
-                const el = merged.find(
-                    (it) => it.vid === vocab.vid && it.sid === vocab.sid,
-                );
-                if (el != null) {
-                    el.occurences += vocab.occurences;
-                    el.decks += 1;
-                } else {
-                    merged.push({ decks: 1, ...vocab });
-                }
-            }
-        }
-        return merged.filter((it) => it.decks >= min_decks);
-    }
 
 
     
