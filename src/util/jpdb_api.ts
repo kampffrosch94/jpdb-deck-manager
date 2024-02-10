@@ -169,24 +169,29 @@ function merge_vocab(vocabss: Vocab[][], min_decks: number): Vocab[] {
     interface VocabWithDeckCount extends Vocab {
         decks: number;
     }
-    const merged: VocabWithDeckCount[] = [];
+    const merged_map = new Map();
     for (const vocabs of vocabss) {
         for (const vocab of vocabs) {
-            const el = merged.find(
-                (it) => it.vid === vocab.vid && it.sid === vocab.sid,
-            );
+            const key = `${vocab.vid},${vocab.sid}`;
+            const el = merged_map.get(key);
             if (el != null) {
                 el.occurences += vocab.occurences;
                 el.decks += 1;
             } else {
-                merged.push({ decks: 1, ...vocab });
+                merged_map.set(key, { decks: 1, ...vocab });
             }
         }
     }
     if (min_decks > 1) {
-        return merged.filter((it) => it.decks >= min_decks);
+        const merged: VocabWithDeckCount[] = [];
+        for (const v of merged_map.values()) {
+            if (v.decks >= min_decks) {
+                merged.push(v);
+            }
+        }
+        return merged;
     } else {
-        return merged
+        return [...merged_map.values()]
     }
 }
 
@@ -222,7 +227,6 @@ function learnAheadCoverage(
     const deep_copy: VocabWithStateFrequency[] = structuredClone(considered);
     let i = 0;
     let j = 0;
-    let w = deep_copy.find((v) => !isKnownWord(v));
     while (i < deep_copy.length) {
         if (j == learnahead) {
             break;
