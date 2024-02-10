@@ -223,20 +223,24 @@ function learnAheadCoverage(
     learnahead: number,
 ): number {
     const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
-    let considered = sorted.filter((v) => "blacklisted" != v.state[0]);
-    const deep_copy: VocabWithStateFrequency[] = structuredClone(considered);
     let i = 0;
-    let j = 0;
-    while (i < deep_copy.length) {
-        if (j == learnahead) {
-            break;
-        }
-        let v = deep_copy[i];
-        if (!isKnownWord(v)) {
-            v.state[0] = "known";
-            j += 1;
-        }
+    let kinda_known = 0;
+    let all = 0;
+    while (i < sorted.length) {
+        let v = sorted[i];
         i += 1;
+        if (v.state[0] === "blacklisted") {
+            continue;
+        }
+        all += v.occurences;
+        if (isKnownWord(v)) {
+            kinda_known += v.occurences;
+        } else {
+            if (learnahead > 0) {
+                learnahead -= 1;
+                kinda_known += v.occurences;
+            }
+        }
     }
-    return computeCoverage(deep_copy);
+    return 100.0 * (kinda_known / all);
 }

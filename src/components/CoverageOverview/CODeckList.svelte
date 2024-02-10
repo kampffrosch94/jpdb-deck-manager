@@ -3,6 +3,7 @@
     import Th from "../Th.svelte";
     import { learnAheadCoverage } from "../../util/jpdb_api";
     export let decks: DeckWithVocabState[];
+    export let startTime: number;
     let decks_with_coverage = decks.map((deck) => {
         return { ...deck, 
             lc_50: learnAheadCoverage(deck.vocabs, 50),
@@ -10,6 +11,8 @@
             lc_custom: learnAheadCoverage(deck.vocabs, 200),
          };
     });
+    console.log(`[${Date.now() - startTime}] Done with coverage prediction`)
+
     const handler = new DataHandler(decks_with_coverage);
     const rows = handler.getRows();
     handler.sortDesc("learning_coverage");
