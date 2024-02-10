@@ -7,7 +7,7 @@
     import DeckYeeter from "./DeckYeeter.svelte";
     import Login from "./Login.svelte";
     import DeckCoverage from "./DeckCoverage.svelte";
-    import CoverageOverview from "./CoverageOverview.svelte";
+    import CoverageOverview from "./CoverageOverview/CoverageOverview.svelte";
 
     enum CurrentPage {
         DeckMerger,
@@ -99,10 +99,11 @@
     <pre>{$result}</pre>
 
     <button type="button" on:click={fetchDecks}>Reload decks</button>
-    <div class="container">
-        {#if currentPage === CurrentPage.CoverageOverview}
-            <CoverageOverview {decks} />
-        {:else}
+
+    {#if currentPage === CurrentPage.CoverageOverview}
+        <CoverageOverview {decks} />
+    {:else}
+        <div class="container">
             <DeckList {decks} />
             {#if currentPage === CurrentPage.DeckMerger}
                 <DeckMerger />
@@ -113,8 +114,8 @@
             {#if currentPage === CurrentPage.DeckCoverage}
                 <DeckCoverage />
             {/if}
-        {/if}
-    </div>
+        </div>
+    {/if}
 {/if}
 
 <style>
