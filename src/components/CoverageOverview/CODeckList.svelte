@@ -5,13 +5,16 @@
     export let decks: DeckWithVocabState[];
     export let startTime: number;
 
+    let min_coverage = 0;
     let custom_learnahead = 200;
     let decks_with_coverage = decks.map((deck) => {
+        let lc_custom = learnAheadCoverage(deck.vocabs, custom_learnahead);
         return {
             ...deck,
             lc_50: learnAheadCoverage(deck.vocabs, 50),
             lc_100: learnAheadCoverage(deck.vocabs, 100),
-            lc_custom: learnAheadCoverage(deck.vocabs, custom_learnahead),
+            lc_custom: lc_custom,
+            cliff: lc_custom - deck.learning_coverage,
         };
     });
     console.log(`[${Date.now() - startTime}] Done with coverage prediction`);
@@ -20,33 +23,57 @@
     handler.sortDesc("learning_coverage");
 
     $: if (custom_learnahead) {
-        console.log("recomputing custom learnahead coverage")
+        console.log("recomputing custom learnahead coverage");
         decks_with_coverage = decks.map((deck) => {
+            let lc_custom = learnAheadCoverage(deck.vocabs, custom_learnahead);
             return {
                 ...deck,
                 lc_50: learnAheadCoverage(deck.vocabs, 50),
                 lc_100: learnAheadCoverage(deck.vocabs, 100),
-                lc_custom: learnAheadCoverage(deck.vocabs, custom_learnahead),
+                lc_custom: lc_custom,
+                cliff: lc_custom - deck.learning_coverage,
             };
         });
         handler = new DataHandler(decks_with_coverage);
         rows = handler.getRows();
         handler.sortDesc("lc_custom");
+        handler.filter(min_coverage, "lc_custom", (a, b) => a > b)
     }
 </script>
+
+<br/>
+<br/>
+Min coverage (LC+{custom_learnahead}):
+<input
+    bind:value={min_coverage}
+    type="number"
+    on:input={() => handler.filter(min_coverage, "lc_custom", (a, b) => a > b)}
+/>
+
+Custom learnahead:
+<input bind:value={custom_learnahead} type="number" />
+
+<p>Explanation:</p>
+<p>
+    LC + 50 etc: learning coverage if you learned 50 additional vocab in local
+    frequency order
+</p>
+<p>Cliff: LC+{custom_learnahead} - learning coverge</p>
+<p>The greater the cliff is the more that media will hammer in new vocab.</p>
 
 <table>
     <thead>
         <tr>
             <Th {handler} orderBy="name">Name</Th>
-            <Th {handler} orderBy="vocab_count">vocab</Th>
-            <Th {handler} orderBy="word_count">words</Th>
+            <Th {handler} orderBy="vocab_count">Vocab</Th>
+            <Th {handler} orderBy="word_count">Words</Th>
             <Th {handler} orderBy="known_coverage">Coverage</Th>
             <Th {handler} orderBy="learning_coverage">Learning<br />Coverage</Th
             >
             <Th {handler} orderBy="lc_50">LC + 50</Th>
             <Th {handler} orderBy="lc_100">LC + 100</Th>
-            <Th {handler} orderBy="lc_custom">LC + custom</Th>
+            <Th {handler} orderBy="lc_custom">LC + {custom_learnahead}</Th>
+            <Th {handler} orderBy="cliff">Cliff</Th>
         </tr>
     </thead>
     <tbody>
@@ -60,6 +87,7 @@
                 <td>{row.lc_50.toFixed(2)}</td>
                 <td>{row.lc_100.toFixed(2)}</td>
                 <td>{row.lc_custom.toFixed(2)}</td>
+                <td>{row.cliff.toFixed(2)}</td>
             </tr>
         {/each}
     </tbody>

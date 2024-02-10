@@ -101,6 +101,11 @@
     }
 </script>
 
+<p>
+    This tool gives an overview over how coverage changes with more vocab
+    learned for all decks where wordcount &gt; 3*vocabcount.
+</p>
+<p>The first load may take a minute or two.</p>
 <button on:click={doTheThing}>Do the Thing!</button>
 
 <div>
