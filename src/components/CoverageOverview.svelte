@@ -2,7 +2,7 @@
     import { DataHandler } from "@vincjo/datatables";
     import Th from "./Th.svelte";
     export let decks: Deck[];
-    const handler = new DataHandler(decks, { rowsPerPage: 10 });
+    const handler = new DataHandler(decks);
     const rows = handler.getRows();
 </script>
 
@@ -32,8 +32,7 @@
         border-spacing: 0;
         width: 100%;
     }
-    td,
-    th {
+    td {
         padding: 4px 20px;
         border-bottom: 1px solid #eee;
     }
