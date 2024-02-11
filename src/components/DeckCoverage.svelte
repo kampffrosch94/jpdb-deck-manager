@@ -1,6 +1,13 @@
 <script lang="ts">
+    import type { Data } from "plotly.js";
     import { selected_decks, token } from "../state/stores";
-    import { fetchDeckVocab, isKnownWord, learnAheadCoverage, lookupVocab } from "../util/jpdb_api";
+    import {
+        fetchDeckVocab,
+        isKnownWord,
+        learnAheadCoverage,
+        lookupVocab,
+    } from "../util/jpdb_api";
+    import CoverageGraph from "./CoverageGraph.svelte";
 
     let deck: DeckWithVocab | undefined;
     $: {
@@ -12,6 +19,39 @@
 
     let learnahead: [number, number][] = [];
     let max_learnable: number = 0;
+    let data: {x: number[], y: number[]};
+
+    function learnAheadCoverageForGraph(vocabs: VocabWithStateFrequency[]) {
+        const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
+        let i = 0;
+        let kinda_known = 0;
+        let all = 0;
+        let learnahead = [0];
+        let learnahead_sum = 0;
+        while (i < sorted.length) {
+            let v = sorted[i];
+            if (v.state[0] === "blacklisted") {
+                i += 1;
+                continue;
+            }
+            all += v.occurences;
+            if (isKnownWord(v)) {
+                kinda_known += v.occurences;
+            } else {
+                learnahead.push(v.occurences + learnahead_sum);
+                learnahead_sum += v.occurences;
+            }
+            i += 1;
+        }
+        let coverages = learnahead.map(
+            (it) => (100.0 * (it + kinda_known)) / all,
+        );
+        let data = {
+            x: Array.from({ length: learnahead.length }, (_, i) => i),
+            y: coverages,
+        };
+        return data;
+    }
 
     async function updateDeck(newDeck: Deck) {
         const fetched = await fetchDeckVocab($token, newDeck);
@@ -34,9 +74,9 @@
             }
         }
         learnahead = learnahead_tmp;
+        data = learnAheadCoverageForGraph(vocab);
         deck = fetched;
     }
-
 </script>
 
 <div>
@@ -73,6 +113,9 @@
                 </tr>
             {/each}
         </table>
+        {#key data}
+            <CoverageGraph {data} />
+        {/key}
     {/if}
 </div>
 
