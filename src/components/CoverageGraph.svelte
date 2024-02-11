@@ -1,15 +1,16 @@
 <script lang="ts">
-    //tsignore
     import Plotly, { type Data } from "plotly.js-dist";
 
     import { onMount, tick } from "svelte";
 
     export let data: { x: number[]; y: number[] };
+    export let title = "";
     onMount(async () => {
         await tick();
         const layout = {
             xaxis: { title: "extra words learned" },
             yaxis: { title: "coverage" },
+            title: title,
         };
 
         const plot_data = {

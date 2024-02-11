@@ -114,7 +114,7 @@
             {/each}
         </table>
         {#key data}
-            <CoverageGraph {data} />
+            <CoverageGraph {data} title={deck.name}/>
         {/key}
     {/if}
 </div>
