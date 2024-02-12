@@ -2,6 +2,7 @@
     import { DataHandler } from "@vincjo/datatables";
     import Th from "../Th.svelte";
     import { learnAheadCoverage } from "../../util/jpdb_api";
+    import CoExplanation from "./COExplanation.svelte";
     export let decks: DeckWithVocabState[];
     export let startTime: number;
 
@@ -37,12 +38,12 @@
         handler = new DataHandler(decks_with_coverage);
         rows = handler.getRows();
         handler.sortDesc("lc_custom");
-        handler.filter(min_coverage, "lc_custom", (a, b) => a > b)
+        handler.filter(min_coverage, "lc_custom", (a, b) => a > b);
     }
 </script>
 
-<br/>
-<br/>
+<br />
+<br />
 Min coverage (LC+{custom_learnahead}):
 <input
     bind:value={min_coverage}
@@ -53,13 +54,7 @@ Min coverage (LC+{custom_learnahead}):
 Custom learnahead:
 <input bind:value={custom_learnahead} type="number" />
 
-<p>Explanation:</p>
-<p>
-    LC + 50 etc: learning coverage if you learned 50 additional vocab in local
-    frequency order
-</p>
-<p>Cliff: LC+{custom_learnahead} - learning coverge</p>
-<p>The greater the cliff is the more that media will hammer in new vocab.</p>
+<CoExplanation {custom_learnahead} />
 
 <table>
     <thead>
