@@ -19,7 +19,7 @@
 
     let learnahead: [number, number][] = [];
     let max_learnable: number = 0;
-    let data: {x: number[], y: number[]};
+    let data: {x: number[], y: number[], occs: number[]};
 
     function learnAheadCoverageForGraph(vocabs: VocabWithStateFrequency[]) {
         const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
@@ -28,6 +28,7 @@
         let all = 0;
         let learnahead = [0];
         let learnahead_sum = 0;
+        let occs = [];
         while (i < sorted.length) {
             let v = sorted[i];
             if (v.state[0] === "blacklisted") {
@@ -40,6 +41,7 @@
             } else {
                 learnahead.push(v.occurences + learnahead_sum);
                 learnahead_sum += v.occurences;
+                occs.push(v.occurences);
             }
             i += 1;
         }
@@ -49,6 +51,7 @@
         let data = {
             x: Array.from({ length: learnahead.length }, (_, i) => i),
             y: coverages,
+            occs: occs,
         };
         return data;
     }
