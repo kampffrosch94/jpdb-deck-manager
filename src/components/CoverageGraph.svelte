@@ -27,33 +27,52 @@
             yaxis: { title: "coverage" },
             title: title,
         };
-        const plot_data_3ormore = {
-            x: filterByOcc(data.x, data.occs, (it) => it >= 3),
-            y: filterByOcc(data.y, data.occs, (it) => it >= 3),
-            type: "scatter",
+        const plot_data_5ormore = {
+            x: filterByOcc(data.x, data.occs, (it) => it >= 5),
+            y: filterByOcc(data.y, data.occs, (it) => it >= 5),
+            mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
-            name: "3 or more occurences",
+            name: "5 or more occurences",
+        };
+        const plot_data_4 = {
+            x: filterByOcc(data.x, data.occs, (it) => it == 4),
+            y: filterByOcc(data.y, data.occs, (it) => it == 4),
+            mode: "lines",
+            hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
+            name: "4 occurences",
+        };
+        const plot_data_3 = {
+            x: filterByOcc(data.x, data.occs, (it) => it == 3),
+            y: filterByOcc(data.y, data.occs, (it) => it == 3),
+            mode: "lines",
+            hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
+            name: "3 occurences",
         };
         const plot_data_2 = {
             x: filterByOcc(data.x, data.occs, (it) => it == 2),
             y: filterByOcc(data.y, data.occs, (it) => it == 2),
-            type: "scatter",
+            mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
             name: "2 occurences",
-            line: { color: "orange" },
+            //line: { color: "orange" },
         };
         const plot_data_1 = {
             x: filterByOcc(data.x, data.occs, (it) => it == 1),
             y: filterByOcc(data.y, data.occs, (it) => it == 1),
-            type: "scatter",
+            mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
             name: "1 occurence",
-            line: { color: "coral" },
+            //line: { color: "coral" },
         };
         Plotly.newPlot(
             "graph",
-            // @ts-ignore
-            [plot_data_3ormore, plot_data_2, plot_data_1],
+            [
+                plot_data_5ormore,
+                plot_data_4,
+                plot_data_3,
+                plot_data_2,
+                plot_data_1,
+            ],
             layout,
         );
     });
