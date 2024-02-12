@@ -32,28 +32,28 @@
             y: filterByOcc(data.y, data.occs, (it) => it >= 5),
             mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
-            name: "5 or more occurences",
+            name: "5 or more occurrences",
         };
         const plot_data_4 = {
             x: filterByOcc(data.x, data.occs, (it) => it == 4),
             y: filterByOcc(data.y, data.occs, (it) => it == 4),
             mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
-            name: "4 occurences",
+            name: "4 occurrences",
         };
         const plot_data_3 = {
             x: filterByOcc(data.x, data.occs, (it) => it == 3),
             y: filterByOcc(data.y, data.occs, (it) => it == 3),
             mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
-            name: "3 occurences",
+            name: "3 occurrences",
         };
         const plot_data_2 = {
             x: filterByOcc(data.x, data.occs, (it) => it == 2),
             y: filterByOcc(data.y, data.occs, (it) => it == 2),
             mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
-            name: "2 occurences",
+            name: "2 occurrences",
             //line: { color: "orange" },
         };
         const plot_data_1 = {
@@ -61,7 +61,7 @@
             y: filterByOcc(data.y, data.occs, (it) => it == 1),
             mode: "lines",
             hovertemplate: "%{x}, %{y:.2f}<extra></extra>",
-            name: "1 occurence",
+            name: "1 occurrence",
             //line: { color: "coral" },
         };
         Plotly.newPlot(
