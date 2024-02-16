@@ -26,6 +26,10 @@
             xaxis: { title: "extra words learned" },
             yaxis: { title: "coverage" },
             title: title,
+            legend: {
+                x: 0.75,
+                y: 0,
+            },
         };
         const plot_data_5ormore = {
             x: filterByOcc(data.x, data.occs, (it) => it >= 5),
