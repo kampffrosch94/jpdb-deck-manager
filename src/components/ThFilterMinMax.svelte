@@ -12,7 +12,7 @@
     placeholder="min"
     bind:value={min}
     on:input={() =>
-      handler.filter([min, max], filterBy, (a, b) => a > b[0] && a < b[1])}
+      handler.filter([min, max], filterBy, (a, b) => a >= b[0] && a <= b[1])}
   />
   <br/>
   <input
@@ -20,7 +20,7 @@
     placeholder="max"
     bind:value={max}
     on:input={() =>
-      handler.filter([min, max], filterBy, (a, b) => a > b[0] && a < b[1])}
+      handler.filter([min, max], filterBy, (a, b) => a >= b[0] && a <= b[1])}
   />
 </th>
 
