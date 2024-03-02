@@ -3,15 +3,17 @@
   export let handler: DataHandler;
   export let filterBy: string = "";
   let value = "";
+
+  async function updateFilter() {
+    handler.filter(value, filterBy);
+  }
+
+  // set filter again if handler changes
+  $: if (handler) updateFilter();
 </script>
 
 <th>
-  <input
-    type="text"
-    placeholder="Filter"
-    bind:value
-    on:input={() => handler.filter(value, filterBy)}
-  />
+  <input type="text" placeholder="Filter" bind:value on:input={updateFilter} />
 </th>
 
 <style>

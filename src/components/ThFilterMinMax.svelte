@@ -4,6 +4,12 @@
   export let filterBy: string = "";
   export let min: number = 0;
   export let max = 100;
+
+  async function updateFilter() {
+    handler.filter([min, max], filterBy, (a, b) => a >= b[0] && a <= b[1]);
+  }
+
+  $: if (handler) updateFilter();
 </script>
 
 <th>
@@ -11,16 +17,14 @@
     type="number"
     placeholder="min"
     bind:value={min}
-    on:input={() =>
-      handler.filter([min, max], filterBy, (a, b) => a >= b[0] && a <= b[1])}
+    on:input={updateFilter}
   />
-  <br/>
+  <br />
   <input
     type="number"
     placeholder="max"
     bind:value={max}
-    on:input={() =>
-      handler.filter([min, max], filterBy, (a, b) => a >= b[0] && a <= b[1])}
+    on:input={updateFilter}
   />
 </th>
 
