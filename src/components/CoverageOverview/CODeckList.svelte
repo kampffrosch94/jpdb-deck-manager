@@ -30,7 +30,7 @@
   let rows = handler.getRows();
   handler.sortDesc("learning_coverage");
 
-  $: if (custom_learnahead) {
+  $: if (custom_learnahead >= 0) {
     console.log("recomputing custom learnahead coverage");
     decks_with_coverage = decks.map((deck) => {
       let lc_custom = learnAheadCoverage(deck.vocabs, custom_learnahead);
