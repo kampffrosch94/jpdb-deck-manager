@@ -1,5 +1,4 @@
 <script lang="ts">
-    import type { Data } from "plotly.js";
     import { selected_decks, token } from "../state/stores";
     import {
         fetchDeckVocab,

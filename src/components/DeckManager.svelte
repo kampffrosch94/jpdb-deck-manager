@@ -8,12 +8,14 @@
     import Login from "./Login.svelte";
     import DeckCoverage from "./DeckCoverage.svelte";
     import CoverageOverview from "./CoverageOverview/CoverageOverview.svelte";
+    import NarrowReader from "./NarrowReader.svelte";
 
     enum CurrentPage {
         DeckMerger,
         DeckYeeter,
         DeckCoverage,
         CoverageOverview,
+        NarrowReader,
     }
     let currentPage = CurrentPage.DeckMerger;
 
@@ -59,6 +61,14 @@
             $selected_decks = [];
         }}>CoverageOverview</a
     >
+    <a
+        href={"#"}
+        on:click={(e) => {
+            e.preventDefault();
+            currentPage = CurrentPage.NarrowReader;
+            $selected_decks = [];
+        }}>NarrowReader</a
+    >
     <p>Result:</p>
     <pre>{$result}</pre>
 
@@ -76,6 +86,9 @@
             {/if}
             {#if currentPage === CurrentPage.DeckCoverage}
                 <DeckCoverage />
+            {/if}
+            {#if currentPage === CurrentPage.NarrowReader}
+                <NarrowReader />
             {/if}
         </div>
     {/if}
