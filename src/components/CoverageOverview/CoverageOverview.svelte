@@ -8,42 +8,11 @@
         merge_vocab,
     } from "../../util/jpdb_api";
     import CoDeckList from "./CODeckList.svelte";
-    import { db } from "../../state/db";
+    import { db, loadCachedDeck, saveDeckToCache } from "../../state/db";
 
     let decks: DeckWithVocabState[] = [];
     let startTime: number;
 
-    async function loadCachedDeck(deck: Deck): Promise<DeckWithVocab | null> {
-        try {
-            const s = (await db.decks.get(deck.id))?.text;
-            if (!s) {
-                return null;
-            }
-            const o: DeckWithVocab = JSON.parse(decompress(s));
-            if (
-                o.id !== deck.id ||
-                o.name !== deck.name ||
-                o.word_count != deck.word_count ||
-                o.vocab_count != deck.vocab_count
-            ) {
-                await db.decks.delete(deck.id);
-                return null;
-            }
-            return o;
-        } catch (error) {
-            console.error(`Error loading cached element: ${error}`);
-            return null;
-        }
-    }
-
-    async function saveDeckToCache(deck: DeckWithVocab) {
-        try {
-            const text = compress(JSON.stringify(deck));
-            await db.decks.add({ id: deck.id, text: text });
-        } catch (error) {
-            console.error(`Error caching element: ${error}`);
-        }
-    }
 
     async function doTheThing() {
         // grab all vocab from all relevant decks and combine it
