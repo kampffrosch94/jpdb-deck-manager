@@ -16,18 +16,22 @@
   $: {
     if ($selected_decks.length > 0) {
       target_deck = $selected_decks[$selected_decks.length - 1];
+      decks = [];
       results = [];
       resetUiHandlers();
     }
   }
 
-  let decks: DeckWithVocabState[];
+  let decks: DeckWithVocabState[] = [];
   let results: (DeckWithVocabState & { coverage_delta: number })[] = [];
   let absolute_min_words = 0;
   let absolute_max_words = 0;
   let handler = new DataHandler(results);
   let rows = handler.getRows();
   let learnahead = 200;
+  $: if (learnahead > 0) {
+    recalculate();
+  }
 
   function resetUiHandlers() {
     // UI Stuff, should probably be in another function / Component
@@ -39,7 +43,14 @@
     absolute_max_words = results
       .map((it) => it.word_count)
       .reduce((acc, curr) => Math.max(acc, curr), 0);
+    handler.sortDesc("coverage_delta");
   }
+
+  // we keep this state around to speed up recalculations
+  let learnable_map = new Map();
+  let target_deck_known_words = 0;
+  let target_deck_total_words = 0;
+  let coverage = 0;
 
   async function doTheThing() {
     if (!target_deck) {
@@ -53,9 +64,9 @@
     );
     const promise = loadAllMediaDecksWithVocabState($token);
 
-    const learnable_map = new Map();
-    let target_deck_known_words = 0;
-    let target_deck_total_words = 0;
+    learnable_map = new Map();
+    target_deck_known_words = 0;
+    target_deck_total_words = 0;
     for (const vocab of target_deck_vocab) {
       if (vocab.state[0] === "blacklisted") {
         continue;
@@ -70,12 +81,14 @@
     }
     decks = await promise;
 
-    const coverage =
-      100.0 * (target_deck_known_words / target_deck_total_words);
+    coverage = 100.0 * (target_deck_known_words / target_deck_total_words);
     console.log("Target Deck: " + target_deck.name);
     console.log("Calculated coverage: " + coverage);
     console.log("Learnable words: " + learnable_map.size);
+    recalculate();
+  }
 
+  function recalculate() {
     // intersect with the target deck vocab and check how learning from this deck changes target deck coverage
     results = [];
     for (const deck of decks) {
@@ -114,6 +127,10 @@
 
   <button on:click={doTheThing} disabled={!target_deck}>Do the Thing!</button>
   {#if results.length > 0}
+    <p>
+      Amount of vocab to assume learned:
+      <input bind:value={learnahead} type="number" />
+    </p>
     <table>
       <thead>
         <tr>
