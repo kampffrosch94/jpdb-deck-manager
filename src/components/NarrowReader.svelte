@@ -12,10 +12,12 @@
   import ThFilterMinMax from "./ThFilterMinMax.svelte";
   import ThFilter from "./ThFilter.svelte";
 
-  let target_deck: Deck | undefined;
+  let target_deck: Deck | null = null;
   $: {
     if ($selected_decks.length > 0) {
       target_deck = $selected_decks[$selected_decks.length - 1];
+      results = [];
+      resetUiHandlers();
     }
   }
 
@@ -25,6 +27,19 @@
   let absolute_max_words = 0;
   let handler = new DataHandler(results);
   let rows = handler.getRows();
+  let learnahead = 200;
+
+  function resetUiHandlers() {
+    // UI Stuff, should probably be in another function / Component
+    handler = new DataHandler(results);
+    rows = handler.getRows();
+    absolute_min_words = results
+      .map((it) => it.word_count)
+      .reduce((acc, curr) => Math.min(acc, curr), 0);
+    absolute_max_words = results
+      .map((it) => it.word_count)
+      .reduce((acc, curr) => Math.max(acc, curr), 0);
+  }
 
   async function doTheThing() {
     if (!target_deck) {
@@ -32,7 +47,7 @@
     }
     decks = [];
     const target_deck_with_vocab = await fetchDeckVocab($token, target_deck);
-    const target_vocab = await lookupVocab(
+    const target_deck_vocab = await lookupVocab(
       $token,
       target_deck_with_vocab.vocabs,
     );
@@ -41,27 +56,31 @@
     const learnable_map = new Map();
     let target_deck_known_words = 0;
     let target_deck_total_words = 0;
-    for (const vocab of target_vocab) {
-      if (vocab.state[0] !== "blacklisted") {
+    for (const vocab of target_deck_vocab) {
+      if (vocab.state[0] === "blacklisted") {
         continue;
       }
       target_deck_total_words += vocab.occurences;
-      if (!isKnownWord(vocab)) {
+      if (isKnownWord(vocab)) {
+        target_deck_known_words += vocab.occurences;
+      } else {
         const key = `${vocab.vid},${vocab.sid}`;
         learnable_map.set(key, vocab);
-        target_deck_known_words += vocab.occurences;
       }
     }
-    const coverage =
-      (100.0 * target_deck_known_words) / target_deck_total_words;
-    console.log("Calculated coverage: " + coverage);
-
     decks = await promise;
+
+    const coverage =
+      100.0 * (target_deck_known_words / target_deck_total_words);
+    console.log("Target Deck: " + target_deck.name);
+    console.log("Calculated coverage: " + coverage);
+    console.log("Learnable words: " + learnable_map.size);
+
     // intersect with the target deck vocab and check how learning from this deck changes target deck coverage
     results = [];
     for (const deck of decks) {
       // grab the X most frequent learnable cards
-      const vocabs = grabXMostFrequentVocab(deck.vocabs, 50);
+      const vocabs = grabXMostFrequentVocab(deck.vocabs, learnahead);
       let delta = 0;
       for (const vocab of vocabs) {
         const key = `${vocab.vid},${vocab.sid}`;
@@ -69,40 +88,31 @@
           learnable_map.get(key);
         delta += target_vocab?.occurences ?? 0;
       }
-      console.log("Delta: " + delta)
+      console.log("Delta: " + delta);
       const new_coverage =
         (100.0 * (target_deck_known_words + delta)) / target_deck_total_words;
       const delta_coverage = new_coverage - coverage;
       results.push({ ...deck, coverage_delta: delta_coverage });
     }
-
-    // UI Stuff, should probably be in another function / Component
-    handler = new DataHandler(results);
-    rows = handler.getRows();
-    absolute_min_words = results
-      .map((it) => it.word_count)
-      .reduce((acc, curr) => Math.min(acc, curr));
-    absolute_max_words = results
-      .map((it) => it.word_count)
-      .reduce((acc, curr) => Math.max(acc, curr));
+    resetUiHandlers();
   }
 </script>
 
 <div>
   <h3>NarrowReader</h3>
-  <p>Pick a Deck on the left.</p>
+  <p>Pick a target deck on the left.</p>
   <p>
-    This tool will tell you how learning the 50 most frequent words from another
-    Deck will change its coverage.
+    This tool will tell you how learning the {learnahead} most frequent words from
+    another deck will change the target decks coverage.
   </p>
   <p>
     Decks are picked according to the same criteria as in the CoverageOverview
     tool.
   </p>
 
-  <p>Current Deck: {target_deck?.name}</p>
+  <p>Current Deck: {target_deck?.name ?? "None. Select one to the left"}</p>
 
-  <button on:click={doTheThing}>Do the Thing!</button>
+  <button on:click={doTheThing} disabled={!target_deck}>Do the Thing!</button>
   {#if results.length > 0}
     <table>
       <thead>
@@ -134,7 +144,7 @@
             <td>{row.name}</td>
             <td>{row.word_count}</td>
             <td>{row.learning_coverage.toFixed(2)}</td>
-            <td>{(row.coverage_delta).toFixed(7)}</td>
+            <td>{row.coverage_delta.toFixed(3)}</td>
           </tr>
         {/each}
       </tbody>
