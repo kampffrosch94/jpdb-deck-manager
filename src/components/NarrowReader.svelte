@@ -5,7 +5,7 @@
     isKnownWord,
     loadAllMediaDecksWithVocabState,
     lookupVocab,
-    learnAheadCoverage
+    learnAheadCoverage,
   } from "../util/jpdb_api";
   import { selected_decks, token } from "../state/stores";
   import { DataHandler } from "@vincjo/datatables";
@@ -24,7 +24,10 @@
   }
 
   let decks: DeckWithVocabState[] = [];
-  let results: (DeckWithVocabState & { coverage_delta: number, learnahead_coverage: number })[] = [];
+  let results: (DeckWithVocabState & {
+    coverage_delta: number;
+    learnahead_coverage: number;
+  })[] = [];
   let absolute_min_words = 0;
   let absolute_max_words = 0;
   let handler = new DataHandler(results);
@@ -107,7 +110,7 @@
         (100.0 * (target_deck_known_words + delta)) / target_deck_total_words;
       const coverage_delta = new_coverage - coverage;
       let learnahead_coverage = learnAheadCoverage(deck.vocabs, learnahead);
-      results.push({ ...deck,  coverage_delta, learnahead_coverage });
+      results.push({ ...deck, coverage_delta, learnahead_coverage });
     }
     resetUiHandlers();
   }
@@ -143,8 +146,20 @@
             <br />
             Coverage
           </Th>
-          <Th {handler} orderBy="learnahead_coverage">LC + {learnahead}</Th>
-          <Th {handler} orderBy="coverage_delta">Coverage Delta</Th>
+          <Th
+            {handler}
+            orderBy="learnahead_coverage"
+            title={`Learning Coverage if you learned the ${learnahead} most frequent words in this deck`}
+          >
+            LC + {learnahead}
+          </Th>
+          <Th
+            {handler}
+            orderBy="coverage_delta"
+            title={`How much the coverage of your target deck would change if you learned ${learnahead} most frequent words in this deck`}
+          >
+            Coverage Delta
+          </Th>
         </tr>
         <tr>
           <ThFilter {handler} filterBy="name" />

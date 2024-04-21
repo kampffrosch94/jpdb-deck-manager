@@ -3,6 +3,7 @@
   import type { DataHandler } from "@vincjo/datatables";
   export let handler: DataHandler;
   export let orderBy: any = null;
+  export let title: string | null = null
 
   const identifier = orderBy?.toString();
   var sorted = handler.getSort();
@@ -28,6 +29,7 @@
 <th
   on:click={() => handler.sort(orderBy)}
   class:active={$sorted.identifier === identifier}
+  title={title}
 >
   <div class="flex">
     <strong>
