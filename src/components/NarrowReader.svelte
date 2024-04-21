@@ -5,6 +5,7 @@
     isKnownWord,
     loadAllMediaDecksWithVocabState,
     lookupVocab,
+    learnAheadCoverage
   } from "../util/jpdb_api";
   import { selected_decks, token } from "../state/stores";
   import { DataHandler } from "@vincjo/datatables";
@@ -23,7 +24,7 @@
   }
 
   let decks: DeckWithVocabState[] = [];
-  let results: (DeckWithVocabState & { coverage_delta: number })[] = [];
+  let results: (DeckWithVocabState & { coverage_delta: number, learnahead_coverage: number })[] = [];
   let absolute_min_words = 0;
   let absolute_max_words = 0;
   let handler = new DataHandler(results);
@@ -104,8 +105,9 @@
       console.log("Delta: " + delta);
       const new_coverage =
         (100.0 * (target_deck_known_words + delta)) / target_deck_total_words;
-      const delta_coverage = new_coverage - coverage;
-      results.push({ ...deck, coverage_delta: delta_coverage });
+      const coverage_delta = new_coverage - coverage;
+      let learnahead_coverage = learnAheadCoverage(deck.vocabs, learnahead);
+      results.push({ ...deck,  coverage_delta, learnahead_coverage });
     }
     resetUiHandlers();
   }
@@ -141,6 +143,7 @@
             <br />
             Coverage
           </Th>
+          <Th {handler} orderBy="learnahead_coverage">LC + {learnahead}</Th>
           <Th {handler} orderBy="coverage_delta">Coverage Delta</Th>
         </tr>
         <tr>
@@ -152,6 +155,7 @@
             max={absolute_max_words}
           />
           <ThFilterMinMax {handler} filterBy="learning_coverage" />
+          <ThFilterMinMax {handler} filterBy="learnahead_coverage" />
           <ThFilterMinMax {handler} filterBy="coverage_delta" />
         </tr>
       </thead>
@@ -161,6 +165,7 @@
             <td>{row.name}</td>
             <td>{row.word_count}</td>
             <td>{row.learning_coverage.toFixed(2)}</td>
+            <td>{row.learnahead_coverage.toFixed(2)}</td>
             <td>{row.coverage_delta.toFixed(3)}</td>
           </tr>
         {/each}
