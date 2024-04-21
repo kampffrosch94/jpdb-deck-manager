@@ -247,6 +247,27 @@ function learnAheadCoverage(
     return 100.0 * (kinda_known / all);
 }
 
+export function grabXMostFrequentVocab(
+    vocabs: VocabWithStateFrequency[],
+    learnahead: number,
+): VocabWithStateFrequency[] {
+    const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
+    let i = 0;
+    const result = [];
+    while ((i < sorted.length) && (learnahead > 0)) {
+        let v = sorted[i];
+        i += 1;
+        if (v.state[0] === "blacklisted") {
+            continue;
+        }
+        if (!isKnownWord(v)) {
+            learnahead -= 1;
+            result.push(v);
+        }
+    }
+    return result;
+}
+
 
 export async function loadAllMediaDecksWithVocabState(token: string): Promise<DeckWithVocabState[]> {
     // grab all vocab from all relevant decks and combine it
