@@ -156,7 +156,7 @@
           <Th
             {handler}
             orderBy="coverage_delta"
-            title={`How much the coverage of your target deck would change if you learned ${learnahead} most frequent words in this deck`}
+            title={`How much the coverage of your target deck would change if you learned the ${learnahead} most frequent words in this deck`}
           >
             Coverage Delta
           </Th>
