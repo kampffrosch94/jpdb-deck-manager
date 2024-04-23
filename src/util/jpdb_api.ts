@@ -292,7 +292,9 @@ export async function loadAllMediaDecksWithVocabState(token: string): Promise<De
         }
 
         vocabss.push(vd.vocabs);
-        v_decks.push(vd);
+        // don't use the coverage etc from the cached deck since it might be outdated
+        // we are only interested in its vocab list, which we check to be (very likely) correct
+        v_decks.push({...deck, vocabs: vd.vocabs});
     }
 
     console.log(`[${Date.now() - startTime}] Done with fetching`);
