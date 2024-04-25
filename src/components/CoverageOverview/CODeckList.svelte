@@ -64,7 +64,7 @@
 <br />
 <br />
 Custom learnahead:
-<input bind:value={custom_learnahead} type="number" />
+<input bind:value={custom_learnahead} type="number" step="50" />
 
 <CoExplanation {custom_learnahead} />
 
