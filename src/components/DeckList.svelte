@@ -45,6 +45,7 @@
         <ThFilterMinMax
           {handler}
           filterBy="vocab_count"
+          step={100}
           max={decks
             .map((it) => it.vocab_count)
             .reduce((acc, curr) => Math.max(acc, curr), 0)}
@@ -52,6 +53,7 @@
         <ThFilterMinMax
           {handler}
           filterBy="word_count"
+          step={1000}
           max={decks
             .map((it) => it.word_count)
             .reduce((acc, curr) => Math.max(acc, curr), 0)}

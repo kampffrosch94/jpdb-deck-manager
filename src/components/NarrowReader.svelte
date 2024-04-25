@@ -168,10 +168,11 @@
             filterBy="word_count"
             min={absolute_min_words}
             max={absolute_max_words}
+            step={1000}
           />
           <ThFilterMinMax {handler} filterBy="learning_coverage" />
           <ThFilterMinMax {handler} filterBy="learnahead_coverage" />
-          <ThFilterMinMax {handler} filterBy="coverage_delta" />
+          <ThFilterMinMax {handler} filterBy="coverage_delta" step={0.1} />
         </tr>
       </thead>
       <tbody>

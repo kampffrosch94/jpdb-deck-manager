@@ -4,6 +4,7 @@
   export let filterBy: string = "";
   export let min: number = 0;
   export let max = 100;
+  export let step: number = 1;
 
   async function updateFilter() {
     handler.filter([min, max], filterBy, (a, b) => a >= b[0] && a <= b[1]);
@@ -18,6 +19,7 @@
     placeholder="min"
     bind:value={min}
     on:input={updateFilter}
+    step={step}
   />
   <br />
   <input
@@ -25,6 +27,7 @@
     placeholder="max"
     bind:value={max}
     on:input={updateFilter}
+    step={step}
   />
 </th>
 
