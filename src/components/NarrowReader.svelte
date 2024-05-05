@@ -134,7 +134,7 @@
   {#if results.length > 0}
     <p>
       Amount of vocab to assume learned:
-      <input bind:value={learnahead} type="number" step="50"/>
+      <input bind:value={learnahead} type="number" step="50" />
     </p>
     <table>
       <thead>

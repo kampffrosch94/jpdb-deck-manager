@@ -19,7 +19,7 @@
     placeholder="min"
     bind:value={min}
     on:input={updateFilter}
-    step={step}
+    {step}
   />
   <br />
   <input
@@ -27,7 +27,7 @@
     placeholder="max"
     bind:value={max}
     on:input={updateFilter}
-    step={step}
+    {step}
   />
 </th>
 
