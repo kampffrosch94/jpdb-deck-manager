@@ -36,7 +36,9 @@ export async function loadCachedDeck(deck: Deck): Promise<DeckWithVocab | null> 
       await db.decks.delete(deck.id);
       return null;
     }
-    return o;
+    // don't use the coverage etc from the cached deck since it might be outdated
+    // we are only interested in its vocab list, which we check to be (very likely) correct
+    return {...deck, vocabs: o.vocabs};
   } catch (error) {
     console.error(`Error loading cached element: ${error}`);
     return null;
