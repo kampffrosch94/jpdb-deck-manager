@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { loadCachedDeck, saveDeckToCache } from "../state/db";
     import { result, selected_decks, token } from "../state/stores";
     import { jpdbRequest, fetchDeckVocab, lookupVocab, merge_vocab } from "../util/jpdb_api";
 
@@ -172,8 +173,12 @@ but also needs a minimum number of decks for a word to appear in for it to be in
                     last_created_deck = null;
                     const vocabss = [];
                     for (const deck of $selected_decks) {
-                        const deck_with_vocab = await fetchDeckVocab($token, deck);
-                        vocabss.push(deck_with_vocab.vocabs);
+                        let vd = await loadCachedDeck(deck);
+                        if (vd === null) {
+                            vd = await fetchDeckVocab($token, deck);
+                            saveDeckToCache(vd);
+                        }
+                        vocabss.push(vd.vocabs);
                     }
                     let vocabs;
                     switch (strat) {
