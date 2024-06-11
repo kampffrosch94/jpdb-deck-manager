@@ -19,8 +19,16 @@
   let learnahead: [number, number][] = [];
   let max_learnable: number = 0;
   let data: { x: number[]; y: number[]; occs: number[] };
+  let new_count = 0;
+  let locked_count = 0;
+  let suspended_count = 0;
+  let unique_count = 0;
 
   function learnAheadCoverageForGraph(vocabs: VocabWithStateFrequency[]) {
+    new_count = 0;
+    locked_count = 0;
+    suspended_count = 0;
+
     const sorted = vocabs.sort((a, b) => b.occurences - a.occurences);
     let i = 0;
     let kinda_known = 0;
@@ -41,6 +49,11 @@
         learnahead.push(v.occurences + learnahead_sum);
         learnahead_sum += v.occurences;
         occs.push(v.occurences);
+        switch (v.state[0]){
+          case "locked": locked_count++; break;
+          case "new": new_count++; break;
+          case "suspended": suspended_count++; break;
+        }
       }
       i += 1;
     }
@@ -58,7 +71,7 @@
     let vocab = await lookupVocab($token, fetched.vocabs);
     let learnahead_tmp: [number, number][] = [];
     let attempts = [
-      50, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 6000, 8000, 10000,
+      50, 200, 400, 1000, 2000, 4000, 10000,
       20000, 100000,
     ];
 
@@ -76,6 +89,7 @@
     learnahead = learnahead_tmp;
     data = learnAheadCoverageForGraph(vocab);
     deck = fetched;
+    unique_count = vocab.filter(it => it.occurences === 1 && !isKnownWord(it)).length;
   }
 </script>
 
@@ -95,8 +109,24 @@
         <td>{deck?.name}</td>
       </tr>
       <tr>
-        <td>WordCount</td>
+        <td>Word Count</td>
         <td>{deck?.word_count}</td>
+      </tr>
+      <tr>
+        <td>New Vocab</td>
+        <td>{new_count}</td>
+      </tr>
+      <tr>
+        <td>Locked Vocab</td>
+        <td>{locked_count}</td>
+      </tr>
+      <tr>
+        <td>Suspended Vocab</td>
+        <td>{suspended_count}</td>
+      </tr>
+      <tr>
+        <td>Unique Unknown Vocab</td>
+        <td>{unique_count}</td>
       </tr>
       <tr>
         <td>known coverage</td>
