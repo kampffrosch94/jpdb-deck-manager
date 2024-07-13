@@ -53,6 +53,10 @@ declare global {
         frequency: number;
     }
 
+    interface VocabWithStateFrequencySpelling extends VocabWithStateFrequency {
+        spelling: string;
+    }
+
     interface DeckWithVocab extends Deck {
         vocabs: Vocab[];
     }
@@ -117,6 +121,30 @@ async function lookupVocab(token: string, vocabs: Vocab[]): Promise<VocabWithSta
         r.push({
             state: json.vocabulary_info[i][0],
             frequency: json.vocabulary_info[i][1],
+            ...vocabs[i],
+        });
+    }
+    return r;
+}
+
+export async function lookupVocabSpelling(token: string, vocabs: Vocab[]): Promise<VocabWithStateFrequencySpelling[]> {
+    const ids = vocabs.map((it) => [it.vid, it.sid]);
+    const json = await (
+        await jpdbRequest(
+            "lookup-vocabulary",
+            {
+                list: ids,
+                fields: ["card_state", "frequency_rank", "spelling"],
+            },
+            token,
+        )
+    ).json();
+    let r = [];
+    for (let i = 0; i < json.vocabulary_info.length; i++) {
+        r.push({
+            state: json.vocabulary_info[i][0],
+            frequency: json.vocabulary_info[i][1],
+            spelling: json.vocabulary_info[i][2],
             ...vocabs[i],
         });
     }

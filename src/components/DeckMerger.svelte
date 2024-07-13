@@ -4,8 +4,8 @@
   import {
     jpdbRequest,
     fetchDeckVocab,
-    lookupVocab,
     merge_vocab,
+    lookupVocabSpelling,
   } from "../util/jpdb_api";
 
   enum UnificationStrategy {
@@ -39,6 +39,9 @@
   let frequency_filter_enabled = false;
   let frequency_filter_min = 1;
   let frequency_filter_max = 30000;
+
+  let regex_filter_enabled = false;
+  let regex_filter_text = "^.*$"; //"^[ぁ-ゟ]*$";
 
   async function addVocabToDeck(id: number, vocabs: Vocab[]) {
     let vocabulary: [number, number][] = [];
@@ -164,8 +167,26 @@ but also needs a minimum number of decks for a word to appear in for it to be in
       </p>
     {/if}
   </p>
+  <p>
+    Filter by regex?
+    <input type="checkbox" bind:checked={regex_filter_enabled} />
+    {#if regex_filter_enabled}
+      <p>
+        Filters by spelling. Refer to <a
+          href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions"
+        >
+          the mozilla doc
+        </a>
+        for details.
+      </p>
+      <p>
+        regex:
+        <input bind:value={regex_filter_text} type="text" />
+      </p>
+    {/if}
+  </p>
   <button
-    disabled={$selected_decks.length <= 0}
+    disabled={$selected_decks.length <= 0 || new_deck_name === ""}
     on:click={async () => {
       if (new_deck_name !== "") {
         last_created_deck = null;
@@ -191,8 +212,12 @@ but also needs a minimum number of decks for a word to appear in for it to be in
             break;
         }
         vocabs = vocabs.filter((it) => it.occurences >= min_occurences);
-        if (state_filter_enabled || frequency_filter_enabled) {
-          vocabs = await lookupVocab($token, vocabs);
+        if (
+          state_filter_enabled ||
+          frequency_filter_enabled ||
+          regex_filter_enabled
+        ) {
+          vocabs = await lookupVocabSpelling($token, vocabs);
           if (state_filter_enabled) {
             vocabs = vocabs.filter((it) => it.state[0] === state_filter);
           }
@@ -202,6 +227,12 @@ but also needs a minimum number of decks for a word to appear in for it to be in
                 frequency_filter_min <= it.frequency &&
                 it.frequency <= frequency_filter_max,
             );
+          }
+          if (regex_filter_enabled) {
+            console.log("Before " + vocabs.length);
+            const re = new RegExp(regex_filter_text);
+            vocabs = vocabs.filter((it) => re.test(it.spelling));
+            console.log("After " + vocabs.length);
           }
         }
         const deck_id = await createNewDeck(new_deck_name);
