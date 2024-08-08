@@ -75,6 +75,9 @@
 
 <div id="deckmerger_div">
   <h3>Deckmerger</h3>
+  <p>Keep in mind that there are limits to the maximum vocab count for decks, so don't go too crazy.</p>
+  <p>The limit is 10k cards for regular users and 50k for patreons. Occurences don't matter.</p>
+
   selected decks:
   <br />
   {#each $selected_decks as deck}
