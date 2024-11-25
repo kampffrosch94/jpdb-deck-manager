@@ -9,11 +9,22 @@
   export let decks: DeckWithVocabState[];
   export let startTime: number;
 
+  function compute_new_count(deck: DeckWithVocabState): number {
+    let count = 0;
+    for (const v of deck.vocabs) {
+      if (v.state[0] === "new") {
+        count++;
+      }
+    }
+    return count;
+  }
+
   let min_coverage = 0;
   let absolute_min_words = 0;
   let absolute_max_words = 0;
   let absolute_min_vocabs = 0;
   let absolute_max_vocabs = 0;
+  let absolute_max_new = 0;
   let custom_learnahead = 200;
   let decks_with_coverage = decks.map((deck) => {
     let lc_custom = learnAheadCoverage(deck.vocabs, custom_learnahead);
@@ -23,6 +34,7 @@
       lc_100: learnAheadCoverage(deck.vocabs, 100),
       lc_custom: lc_custom,
       cliff: lc_custom - deck.learning_coverage,
+      new_count: compute_new_count(deck),
     };
   });
   console.log(`[${Date.now() - startTime}] Done with coverage prediction`);
@@ -40,6 +52,7 @@
         lc_100: learnAheadCoverage(deck.vocabs, 100),
         lc_custom: lc_custom,
         cliff: lc_custom - deck.learning_coverage,
+        new_count: compute_new_count(deck),
       };
     });
     handler = new DataHandler(decks_with_coverage);
@@ -58,6 +71,9 @@
     absolute_max_vocabs = decks_with_coverage
       .map((it) => it.vocab_count)
       .reduce((acc, curr) => Math.max(acc, curr));
+    absolute_max_new = decks_with_coverage
+      .map((it) => it.new_count)
+      .reduce((acc, curr) => Math.max(acc, curr));
   }
 </script>
 
@@ -74,6 +90,7 @@ Custom learnahead:
       <Th {handler} orderBy="name">Name</Th>
       <Th {handler} orderBy="vocab_count">Vocab</Th>
       <Th {handler} orderBy="word_count">Words</Th>
+      <Th {handler} orderBy="new_count">New<br>Count</Th>
       <Th {handler} orderBy="known_coverage">Coverage</Th>
       <Th {handler} orderBy="learning_coverage">
         Learning
@@ -99,6 +116,7 @@ Custom learnahead:
         min={absolute_min_words}
         max={absolute_max_words}
       />
+      <ThFilterMinMax {handler} filterBy="new_count" max={absolute_max_new}/>
       <ThFilterMinMax {handler} filterBy="known_coverage" />
       <ThFilterMinMax {handler} filterBy="learning_coverage" />
       <ThFilterMinMax {handler} filterBy="lc_50" />
@@ -113,6 +131,7 @@ Custom learnahead:
         <td>{row.name}</td>
         <td>{row.vocab_count}</td>
         <td>{row.word_count}</td>
+        <td>{row.new_count}</td>
         <td>{row.known_coverage.toFixed(2)}</td>
         <td>{row.learning_coverage.toFixed(2)}</td>
         <td>{row.lc_50.toFixed(2)}</td>
